@@ -15,6 +15,9 @@ static float initialFoV;
 // Include GLFW
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE	
+#include "stb_image.h"
+
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>

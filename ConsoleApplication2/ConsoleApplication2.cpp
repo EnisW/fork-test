@@ -135,7 +135,7 @@ int main(void)
 
 	Camera camera(programID, window);
 
-	std::string path = "untitled.obj";
+	std::string path = "cube.obj";
 
 	Object squareObject0(path);
 	Object squareObject1(path);

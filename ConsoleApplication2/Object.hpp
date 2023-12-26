@@ -25,6 +25,8 @@ public:
 		return indices;
 	};
 
+	void setTexture(std::string path);
+
 	void move(glm::vec3 movement) {
 		modelMatrix = glm::translate(modelMatrix, movement);
 	};
@@ -41,6 +43,7 @@ public:
 	std::vector<float> data;
 	std::vector<unsigned int> indices;
 	unsigned int elementBufferBias;
+	unsigned char* textureData;
 
 	private:
 		glm::mat4 modelMatrix;

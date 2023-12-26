@@ -55,3 +55,7 @@ void Object::loadData(std::string& path){
 	
 	file.close();
 }
+
+void Object::setTexture(std::string path)
+{
+}

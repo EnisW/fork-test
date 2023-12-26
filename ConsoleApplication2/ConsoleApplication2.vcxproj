@@ -143,6 +143,7 @@
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Object.hpp" />
     <ClInclude Include="Render.hpp" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="Util.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
