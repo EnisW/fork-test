@@ -41,7 +41,7 @@ public:
 
 	
 
-	unsigned int modelIndex;
+	float modelIndex;
 	std::vector<Vertex> data;
 	std::vector<unsigned int> indices;
 	unsigned int elementBufferBias;

@@ -138,6 +138,8 @@
   <ItemGroup>
     <None Include="shader.frag" />
     <None Include="shader.vert" />
+    <None Include="shaderLine.frag" />
+    <None Include="shaderLine.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />

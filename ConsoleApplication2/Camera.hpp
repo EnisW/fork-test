@@ -5,7 +5,7 @@ class Camera
 {
 
 public:
-	Camera(GLuint,GLFWwindow*);
+	Camera(GLuint, GLuint,GLFWwindow*);
 	~Camera();
 
 
@@ -22,7 +22,10 @@ public:
 	
 private:
 	GLuint programID;
+	GLuint programID2;
 	GLuint matrixID;
+	GLuint matrixID2;
+
 	glm::mat4 MVP;
 	GLFWwindow* window;
 	glm::vec3 position;

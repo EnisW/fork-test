@@ -30,6 +30,7 @@ void Object::setTexture(std::string path)
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
 	if (data) {
+		glActiveTexture(GL_TEXTURE0);
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		if (nrChannels == 3) {

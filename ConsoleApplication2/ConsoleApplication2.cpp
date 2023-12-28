@@ -68,23 +68,6 @@ int main(void)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 
-	std::vector<float> square0 = {
-		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 0
-		0.0f, 3.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 1
-		3.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,// 2
-		3.0f, 3.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,// 3
-		0.0f, 3.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,// 4
-		3.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  0.0f// 5
-	};
-
-	std::vector<float> square1 = {
-		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,0.0f, // 0
-		0.0f, -3.0f, 0.0f, 0.0f, 1.0f, 1.0f,0.0f, // 1
-		-3.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,0.0f, // 2
-		-3.0f, -3.0f, 0.0f, 0.0f, 1.0f, 1.0f,0.0f, // 3
-		0.0f, -3.0f, 0.0f, 0.0f, 1.0f, 1.0f,0.0f, // 4
-		-3.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f // 5
-	};
 
 
 
@@ -129,19 +112,19 @@ int main(void)
 
 
 	GLuint programID = LoadShaders("shader.vert", "shader.frag");
+	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
 
+	
 
-	glUseProgram(programID);
+	Camera camera(programID, programID2, window);
 
-	Camera camera(programID, window);
-
-	std::string path = "untitled1.obj";
+	std::string path = "untitled.obj";
 
 	Object squareObject0(path);
 	Object squareObject1(path);
 	squareObject0.move(vec3(0.0f, 0.0f, 0.0f));
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-
+	squareObject0.setTexture("image.png");
 
 
 	Renderer renderer = Renderer(programID);
@@ -158,12 +141,12 @@ int main(void)
 
 
 
+		glUseProgram(programID2);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glBindVertexArray(VertexArrayID);
 
 		glDrawArrays(GL_LINES, 0, 8);
-
 		renderer.render();
 		camera.update();
 

@@ -16,7 +16,7 @@ public:
 	void render();
 
 private:
-
+	
 	std::vector<Object*> objects;
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indicies;

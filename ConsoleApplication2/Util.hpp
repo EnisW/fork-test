@@ -27,14 +27,8 @@ struct _Vertex{
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
-	GLuint modelIndex;
-	bool operator== (_Vertex& a) {
-		return pos.x == a.pos.x &&
-			pos.y == a.pos.y &&
-			pos.z == a.pos.z &&
-			texCoord.x == a.texCoord.x &&
-			texCoord.y == a.texCoord.y;
-	};
+	GLfloat modelIndex;
+	
 } ;
 typedef struct _Vertex Vertex;
 

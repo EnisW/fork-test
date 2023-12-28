@@ -1,5 +1,5 @@
 #include "Render.hpp"
-#define VERTEX_SIZE 7
+
 Renderer::Renderer(GLuint programID)
 {
 
@@ -23,7 +23,7 @@ Renderer::Renderer(GLuint programID)
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 7,
+		sizeof(float) * 9,
 		(void*)0
 	);
 
@@ -33,18 +33,29 @@ Renderer::Renderer(GLuint programID)
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 7,
+		sizeof(float) * 9,
 		(void*)(sizeof(float) * 3)
 	);
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(
 		2,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(float) * 9,
+		(void*)(sizeof(float) * 6)
+	);
+
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(
+		3,
 		1,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 7,
-		(void*)(sizeof(float) * 6)
+		sizeof(float) * 9,
+		(void*)(sizeof(float) * 8)
 	);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -74,10 +85,10 @@ void Renderer::addObject(Object* object)
 			}
 		}
 
-		for (int i = 6; i < object->data.size(); i += 7) {
-			object->data[i].modelIndex += object->modelIndex;
+		for (int i = 0; i < object->data.size(); i++) {
+			object->data[i].modelIndex = object->modelIndex;
 		}
-		unsigned int bias = this->vertices.size() / VERTEX_SIZE;
+		unsigned int bias = this->vertices.size();
 
 		std::vector<Vertex> data = object->getData();
 		for (int i = 0; i < data.size(); i++) {
@@ -86,13 +97,13 @@ void Renderer::addObject(Object* object)
 		std::vector<unsigned int> indicies_t = object->getIndices();
 		object->elementBufferBias = bias;
 		for (int i = 0; i < indicies_t.size(); i++) {
-			this->indicies.push_back(indicies_t[i]+ bias);
+			this->indicies.push_back(indicies_t[i] + bias);
 		}
 
 
 		glBindVertexArray(VertexArrayID);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indicies.size(), &this->indicies[0], GL_STATIC_DRAW);
@@ -140,6 +151,7 @@ void Renderer::removeObject(Object* object)
 
 void Renderer::render()
 {
+	glUseProgram(programID);
 	glBindVertexArray(VertexArrayID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 

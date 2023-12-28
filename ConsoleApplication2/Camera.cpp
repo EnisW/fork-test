@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 
-Camera::Camera(GLuint ID, GLFWwindow* window)
+Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -16,7 +16,9 @@ Camera::Camera(GLuint ID, GLFWwindow* window)
 	mouseSpeed = 0.10f;
 	this->window = window;
 	programID = ID;
+	programID2 = ID2;
 	matrixID = glGetUniformLocation(programID, "VP");
+	matrixID2 = glGetUniformLocation(programID2, "VP");
 	glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 100.0f);
 	position = glm::vec3(0, 0, 10);
 
@@ -92,8 +94,11 @@ void Camera::update()
 	);
 
 	setMVP(ProjectionMatrix * ViewMatrix);
-
+	glUseProgram(programID);
 	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP[0][0]);
+	glUseProgram(programID2);
+	glUniformMatrix4fv(matrixID2, 1, GL_FALSE, &MVP[0][0]);
+
 }
 
 
