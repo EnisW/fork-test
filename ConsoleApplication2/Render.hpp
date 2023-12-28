@@ -18,7 +18,7 @@ public:
 private:
 
 	std::vector<Object*> objects;
-	std::vector<float> vertices;
+	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indicies;
 
 	std::vector<glm::mat4> modelMatrices;

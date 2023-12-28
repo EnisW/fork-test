@@ -1,6 +1,7 @@
 #pragma once
 // Include standard headers
 #include <stdio.h>
+#include <string>
 #include <stdlib.h>
 #include <fstream>
 #include <sstream>
@@ -22,10 +23,24 @@ static float initialFoV;
 #include <glm/gtx/transform.hpp>
 
 
-
-typedef struct {
+struct _Vertex{
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
 	GLuint modelIndex;
-} Vertex;
+	bool operator== (_Vertex& a) {
+		return pos.x == a.pos.x &&
+			pos.y == a.pos.y &&
+			pos.z == a.pos.z &&
+			texCoord.x == a.texCoord.x &&
+			texCoord.y == a.texCoord.y;
+	};
+} ;
+typedef struct _Vertex Vertex;
+
+
+typedef struct {
+
+	unsigned int vertex;
+	unsigned int texture;
+} Index;

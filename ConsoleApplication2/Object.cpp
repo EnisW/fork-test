@@ -1,6 +1,8 @@
 #include "Object.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-Object::Object(std::vector<float> data)
+Object::Object(std::vector<Vertex> data)
 {
 	modelMatrix = glm::mat4(1.0f);
 	this->data = data;
@@ -20,55 +22,7 @@ Object::~Object()
 
 void Object::loadData(std::string& path){
 
-	char line[256];
-	unsigned int i1, i2, i3, t1, t2, t3;
-	bool hasTexture = false;
-
-
-
-	std::fstream file(path);
-	if (file.fail()) {
-		std::cout << "Failed to open file: " << path << std::endl;
-		return;
-	}
-
-	while (file.is_open() && !file.eof()) {
-
-		file.getline(line, 256);
-		Vertex vertex;
-
-		if (line[0] == 'v' && line[1] == ' ') {
-			sscanf(line, "v %f %f %f", &vertex.pos.x, &vertex.pos.y, &vertex.pos.z);
-		}
-		if (line[0] == 'v' && line[1] == 't') {
-			sscanf(line, "v %f %f", &vertex.texCoord.x, &vertex.texCoord.y);
-			hasTexture = true;
-		}
-
-
-		if (line[0] == 'f' && line[1] == ' ' || hasTexture) {
-			sscanf(line, "f %u/%u %u/%u %u/%u", &i1, &t1, &i2, &t2, &i3, &t3);
-			indices.push_back(i1-1);
-			indices.push_back(i2-1);
-			indices.push_back(i3-1);
-		}
-
-		if (line[0] == 'f' && line[1] == ' ' || !hasTexture) {
-			sscanf(line, "f %u %u %u", &i1, &i2, &i3);
-			indices.push_back(i1 - 1);
-			indices.push_back(i2 - 1);
-			indices.push_back(i3 - 1);
-		}
-
-
-
-
-	}
-
-	
-
-	
-	file.close();
+	readVT(path);
 }
 
 void Object::setTexture(std::string path)
@@ -101,92 +55,85 @@ void Object::setTexture(std::string path)
 	stbi_image_free(data);
 }
 
-void Object::convertData(std::string path)
-{
 
 
-	char line[256];
-	unsigned int i1, i2, i3, t1, t2, t3;
-	bool hasTexture = false;
+
+void Object::readVT(std::string path) {
+
 	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> texCoords;
-
-
-	std::vector<std::string> temp;
-	std::vector<Vertex> vertices2;
-
+	std::vector<glm::vec3> texCoords;
+	std::vector<Index> indices;
+	std::vector<Vertex> tempVertexArray;
+	std::vector<unsigned int> tempIndexArray;
 
 	std::fstream file(path);
-	if (file.fail()) {
-		std::cout << "Failed to open file: " << path << std::endl;
-		return;
-	}
 
-	while (file.is_open() && !file.eof()) {
+
+	while (!file.eof()) {
+		char line[256];
+		glm::vec3 tempVertex;
+		glm::vec3 tempUV;
 
 
 		file.getline(line, 256);
-		
-		Vertex tempVertex[3];
 
-		glm::vec3 vertex;
-		glm::vec2 texCoord;
+		Index tempI[3];
+		unsigned int i1, i2, i3;
+		unsigned int t1, t2, t3;
 
 		if (line[0] == 'v' && line[1] == ' ') {
-			sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-			vertices.push_back(vertex);
+			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
+			vertices.push_back(tempVertex);
 		}
+
 		if (line[0] == 'v' && line[1] == 't') {
-			sscanf(line, "vt %f %f", &texCoord.x, &texCoord.y);
-			hasTexture = true;
-			texCoords.push_back(texCoord);
+			sscanf_s(line, "vt %f %f", &tempUV.x, &tempUV.y);
+			texCoords.push_back(tempUV);
 		}
 
 
-		if (line[0] == 'f' && line[1] == ' ' || hasTexture) {
-			sscanf(line, "f %u/%u %u/%u %u/%u", &i1, &t1, &i2, &t2, &i3, &t3);
-			tempVertex[0].pos = vertices[i1 - 1];
-			tempVertex[0].texCoord = texCoords[t1 - 1];
-			tempVertex[1].pos = vertices[i2 - 1];
-			tempVertex[1].texCoord = texCoords[t2 - 1];
-			tempVertex[2].pos = vertices[i3 - 1];
-			tempVertex[2].texCoord = texCoords[t3 - 1];
-			indices.push_back(getVertexPos(vertices2, tempVertex[0]));
-			indices.push_back(getVertexPos(vertices2, tempVertex[1]));
-			indices.push_back(getVertexPos(vertices2, tempVertex[2]));
+		if (line[0] == 'f' && line[1] == ' ') {
+			sscanf_s(line, "f %u/%u %u/%u %u/%u", &i1, &t1, &i2, &t2, &i3, &t3);
+			tempI[0].vertex = i1 - 1;
+			tempI[1].vertex = i2 - 1;
+			tempI[2].vertex = i3 - 1;
+			tempI[0].texture = t1 - 1;
+			tempI[1].texture = t2 - 1;
+			tempI[2].texture = t3 - 1;
+			indices.push_back(tempI[0]);
+			indices.push_back(tempI[1]);
+			indices.push_back(tempI[2]);
+
 		}
-
-		if (line[0] == 'f' && line[1] == ' ' || !hasTexture) {
-			sscanf(line, "f %u %u %u", &i1, &i2, &i3);
-			indices.push_back(i1 - 1);
-			indices.push_back(i2 - 1);
-			indices.push_back(i3 - 1);
-		}
-
-
 
 
 	}
 
+	for (Index x : indices) {
+		Vertex v;
+		unsigned int vPos = 0;
+		v.pos = vertices[x.vertex];
+		v.texCoord = texCoords[x.texture];
 
+		bool found = false;
+		for (; vPos < tempVertexArray.size(); vPos++) {
+			if (v.pos == tempVertexArray[vPos].pos && v.texCoord == tempVertexArray[vPos].texCoord) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			tempIndexArray.push_back(vPos);
+		}
+		else {
+			tempVertexArray.push_back(v);
+			tempIndexArray.push_back(tempVertexArray.size() - 1);
+		}
+	}
 
+	this->data = tempVertexArray;
+	this->indices = tempIndexArray;
 
 	file.close();
-}
 
-unsigned int Object::getVertexPos(std::vector<Vertex>& vertices, Vertex vertex)
-{
-
-	for (int i = 0; i < vertices.size(); i++) {
-		if (vertices[i].pos == vertex.pos && vertices[i].texCoord == vertex.texCoord) {
-			return i;
-		}
-	}
-
-	vertices.push_back(vertex);
-	return vertices.size() - 1;
-
-
-
-	return 0;
 }

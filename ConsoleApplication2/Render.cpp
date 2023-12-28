@@ -75,11 +75,11 @@ void Renderer::addObject(Object* object)
 		}
 
 		for (int i = 6; i < object->data.size(); i += 7) {
-			object->data[i] += object->modelIndex;
+			object->data[i].modelIndex += object->modelIndex;
 		}
 		unsigned int bias = this->vertices.size() / VERTEX_SIZE;
 
-		std::vector<float> data = object->getData();
+		std::vector<Vertex> data = object->getData();
 		for (int i = 0; i < data.size(); i++) {
 			vertices.push_back(data[i]);
 		}
@@ -110,17 +110,17 @@ void Renderer::removeObject(Object* object)
 {
 	//TODO: decrease indices of objects after the removed one
 
-
+	/*
 	objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
 
-	std::vector<float> data = object->getData();
+	std::vector<Vertex> data = object->getData(); // DONT USE ITERATORS, DO IT YOURSELF
 	for (int i = 0; i < data.size(); i++) {
-		vertices.erase(std::remove(vertices.begin(), vertices.end(), data[i]), vertices.end());
+		this->vertices.erase(std::remove(this->vertices.begin(), this->vertices.end(), data[i]), this->vertices.end());
 	}
 
-	std::vector<unsigned int> indicies = object->getIndices();
-	for (int i = 0; i < indicies.size(); i++) {
-		this->indicies.erase(std::remove(this->indicies.begin(), this->indicies.end(), indicies[i]), this->indicies.end());
+	std::vector<unsigned int> indicies_t = object->getIndices();
+	for (int i = 0; i < indicies_t.size(); i++) {
+		this->indicies.erase(std::remove(this->indicies.begin(), this->indicies.end(), indicies_t[i]), this->indicies.end());
 	}
 
 
@@ -135,6 +135,7 @@ void Renderer::removeObject(Object* object)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	*/
 }
 
 void Renderer::render()
