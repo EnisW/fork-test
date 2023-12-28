@@ -135,7 +135,7 @@ int main(void)
 
 	Camera camera(programID, window);
 
-	std::string path = "cube.obj";
+	std::string path = "untitled.obj";
 
 	Object squareObject0(path);
 	Object squareObject1(path);
@@ -149,6 +149,7 @@ int main(void)
 	renderer.addObject(&squareObject1);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 
 

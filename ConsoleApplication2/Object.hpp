@@ -2,7 +2,8 @@
 
 #include "Util.hpp"
 
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 class Object
 {
 
@@ -39,14 +40,19 @@ public:
 		return modelMatrix;
 	};
 
+	
+
 	unsigned int modelIndex;
 	std::vector<float> data;
 	std::vector<unsigned int> indices;
 	unsigned int elementBufferBias;
+	
 	unsigned char* textureData;
+	GLuint textureID;
 
 	private:
 		glm::mat4 modelMatrix;
-
+		void convertData(std::string path);
+		unsigned int getVertexPos(std::vector<Vertex>& vertices, Vertex vertex);
 
 };

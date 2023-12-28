@@ -15,9 +15,17 @@ static float initialFoV;
 // Include GLFW
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE	
-#include "stb_image.h"
+
 
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+
+
+
+typedef struct {
+	glm::vec3 pos;
+	glm::vec3 color;
+	glm::vec2 texCoord;
+	GLuint modelIndex;
+} Vertex;
