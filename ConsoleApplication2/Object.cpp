@@ -20,6 +20,13 @@ Object::~Object()
 {
 }
 
+void Object::setColor(glm::vec3 color)
+{
+	for (Vertex& v : data) {
+		v.color = color;
+	}
+}
+
 void Object::loadData(std::string& path){
 
 	readVT(path);

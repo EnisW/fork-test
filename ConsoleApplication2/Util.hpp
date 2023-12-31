@@ -33,8 +33,11 @@ struct _Vertex{
 typedef struct _Vertex Vertex;
 
 
+
+
 typedef struct {
 
 	unsigned int vertex;
 	unsigned int texture;
 } Index;
+

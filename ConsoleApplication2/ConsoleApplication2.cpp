@@ -113,21 +113,23 @@ int main(void)
 
 	GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
+	GLuint programIDColored = LoadShaders("shaderColored.vert", "shaderColored.frag");
 
 	
 
-	Camera camera(programID, programID2, window);
+	Camera camera(programIDColored, programID2, window);
 
-	std::string path = "untitled.obj";
+	std::string path = "untitled1.obj";
 
 	Object squareObject0(path);
 	Object squareObject1(path);
 	squareObject0.move(vec3(0.0f, 0.0f, 0.0f));
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-	squareObject0.setTexture("image.png");
+	squareObject0.setColor(vec3(1.0f, 0.0f, 0.0f));
+	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
 
 
-	Renderer renderer = Renderer(programID);
+	Renderer renderer = Renderer(programIDColored);
 	renderer.addObject(&squareObject0);
 	renderer.addObject(&squareObject1);
 

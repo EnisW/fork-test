@@ -33,6 +33,10 @@
     <None Include="shader.frag" />
     <None Include="shaderLine.frag" />
     <None Include="shaderLine.vert" />
+    <None Include="shaderColored.vert" />
+    <None Include="shaderColored.frag" />
+    <None Include="shadowMap.vert" />
+    <None Include="shadowMap.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp">

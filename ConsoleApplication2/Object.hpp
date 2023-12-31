@@ -15,6 +15,8 @@ public:
 		this->data = data;
 	};
 
+	void setColor(glm::vec3 color);
+
 	void loadData(std::string& path);
 
 	std::vector<Vertex> getData() {
