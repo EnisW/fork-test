@@ -23,9 +23,12 @@ static float initialFoV;
 #include <glm/gtx/transform.hpp>
 
 
+#define MAX_OBJECT 32
+
 struct _Vertex{
 	glm::vec3 pos;
 	glm::vec3 color;
+	glm::vec3 normal;
 	glm::vec2 texCoord;
 	GLfloat modelIndex;
 	
@@ -39,5 +42,6 @@ typedef struct {
 
 	unsigned int vertex;
 	unsigned int texture;
+	unsigned int normal;
 } Index;
 

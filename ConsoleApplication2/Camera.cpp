@@ -3,6 +3,7 @@
 Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	position = glm::vec3(0, 0, 10);
 
 	// horizontal angle : toward -Z
 	horizontalAngle = 3.14f;
@@ -19,8 +20,15 @@ Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 	programID2 = ID2;
 	matrixID = glGetUniformLocation(programID, "VP");
 	matrixID2 = glGetUniformLocation(programID2, "VP");
+	glUseProgram(programID);
+	viewPosID = glGetUniformLocation(programID, "viewPos");
+	glUseProgram(programGround);
+	viewPosIDGround = glGetUniformLocation(programGround, "viewPos");
+
+
+	glUniform3fv(viewPosID, 1, &position[0]);
+	
 	glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 100.0f);
-	position = glm::vec3(0, 0, 10);
 
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
@@ -96,9 +104,14 @@ void Camera::update()
 	setMVP(ProjectionMatrix * ViewMatrix);
 	glUseProgram(programID);
 	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP[0][0]);
+	glUseProgram(programGround);
+	glUniformMatrix4fv(matrixIDGround, 1, GL_FALSE, &MVP[0][0]);
 	glUseProgram(programID2);
 	glUniformMatrix4fv(matrixID2, 1, GL_FALSE, &MVP[0][0]);
-
+	glUseProgram(programID);
+	glUniform3fv(viewPosID, 1, &position[0]);
+	glUseProgram(programGround);
+	glUniform3fv(viewPosIDGround, 1, &position[0]);
 }
 
 

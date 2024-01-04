@@ -140,6 +140,8 @@
     <None Include="shader.vert" />
     <None Include="shaderColored.frag" />
     <None Include="shaderColored.vert" />
+    <None Include="shaderGround.frag" />
+    <None Include="shaderGround.vert" />
     <None Include="shaderLine.frag" />
     <None Include="shaderLine.vert" />
     <None Include="shadowMap.frag" />

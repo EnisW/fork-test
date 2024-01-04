@@ -68,7 +68,7 @@ int main(void)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 
-
+	
 
 
 
@@ -114,29 +114,32 @@ int main(void)
 	GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
 	GLuint programIDColored = LoadShaders("shaderColored.vert", "shaderColored.frag");
+	GLuint programIDGround = LoadShaders("shaderGround.vert", "shaderGround.frag");
 
 	
 
-	Camera camera(programIDColored, programID2, window);
-
+	Camera camera(programID, programID2, window);
+	camera.setGroundProgram(programIDGround);
 	std::string path = "untitled1.obj";
+	std::string path1 = "ground.obj";
 
-	Object squareObject0(path);
 	Object squareObject1(path);
-	squareObject0.move(vec3(0.0f, 0.0f, 0.0f));
+	Object groundObject(path1);
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-	squareObject0.setColor(vec3(1.0f, 0.0f, 0.0f));
+	groundObject.move(vec3(0.0f, 0.0f, 0.0f));
 	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject1.setTexture("image.png");
 
 
-	Renderer renderer = Renderer(programIDColored);
-	renderer.addObject(&squareObject0);
+	Renderer renderer = Renderer(programID);
 	renderer.addObject(&squareObject1);
+	Renderer rendererGround = Renderer(programIDGround);
+	rendererGround.addObject(&groundObject);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-
+	
 
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -150,6 +153,7 @@ int main(void)
 
 		glDrawArrays(GL_LINES, 0, 8);
 		renderer.render();
+		rendererGround.render();
 		camera.update();
 
 		// Swap buffers

@@ -1,30 +1,38 @@
 #version 330 core
-in vec4 FragPosLightSpace;
 
-out float fragDepth;
 
-uniform sampler2D shadowMap;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+
 in vec3 outColor;
-
+in vec3 outNormal;
+in vec3 fragPos;
 out vec4 FragColor;
 
 void main()
 {
-    // Transform fragment position to light space coordinates
-    vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+	vec3 lightColor = vec3(1.0, 1.0, 1.0);
+    vec3 ambient = 0.1 * lightColor;
 
-    // Map coordinates to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
 
-    // Get depth value from the shadow map
-    float depth = texture(shadowMap, projCoords.xy).r;
+    vec3 norm = normalize(outNormal);
+    vec3 lightDir = normalize(lightPos - fragPos);
 
-    // Compare depth to the fragment's depth
-    fragDepth = projCoords.z;
-    float shadow = (fragDepth - 0.001 > depth) ? 1.0 : 0.0;
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
 
-    // Output final color with shadow
-    // You can use this shadow value to attenuate the fragment's color
-    vec3 finalColor = outColor * shadow;
-    FragColor = vec4(finalColor, 1.0);
+    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    
+
+    float specularStrength = 0.8;
+
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
+  
+    vec3 result = (diffuse + ambient + specular) * outColor;
+    
+    FragColor = vec4(result, 1.0);
+    
 }

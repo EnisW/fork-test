@@ -19,12 +19,22 @@ public:
 			initialFoV += temp;
 
 	}
+
+	void setGroundProgram(GLuint program) {
+		programGround = program;
+		matrixIDGround = glGetUniformLocation(programGround, "VP");
+	}
 	
 private:
 	GLuint programID;
 	GLuint programID2;
+	GLuint programGround;
 	GLuint matrixID;
 	GLuint matrixID2;
+	GLuint matrixIDGround;
+
+	GLuint viewPosID;
+	GLuint viewPosIDGround;
 
 	glm::mat4 MVP;
 	GLFWwindow* window;

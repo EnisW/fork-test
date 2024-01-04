@@ -50,9 +50,12 @@ public:
 	
 	unsigned char* textureData;
 	GLuint textureID;
+	GLuint textureSlot;
 
 	private:
 		void readVT(std::string path);
+		void readVTN(std::string path);
+
 		glm::mat4 modelMatrix;
 
 };

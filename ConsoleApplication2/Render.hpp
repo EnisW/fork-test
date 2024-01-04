@@ -11,20 +11,21 @@ public:
 	Renderer(GLuint programID);
 	~Renderer();
 
-	void addObject(Object* object);
+	bool addObject(Object* object);
 	void removeObject(Object* object);
+
 
 	void render();
 
+	bool textureEnabled;
+
 private:
-	const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 	GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 	GLuint screenHeight, screenWidth;
 	glm::mat4 lightProjection, lightView;
 
-	void updateShadowMap();
-	void createShadowMap();
+	
 	
 	GLuint shadowMapFBO;
 	GLuint shadowMap;
@@ -35,12 +36,14 @@ private:
 	std::vector<unsigned int> indicies;
 
 	std::vector<glm::mat4> modelMatrices;
+	glm::vec3 lightPos;
 
 	GLuint vertexbuffer;
 	GLuint elementBuffer;
 	GLuint VertexArrayID;
 
 	GLuint modelUniformID;
+	GLuint lightUniformID;
 	GLuint programID;
 
 	std::vector<bool> modelMatrixUsed;

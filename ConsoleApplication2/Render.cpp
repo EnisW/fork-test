@@ -8,10 +8,11 @@ Renderer::Renderer(GLuint programID)
 	screenHeight = 768;
 	screenWidth = 1024;
 
+	textureEnabled = false;
 
-	modelMatrices.resize(100);
-	modelMatrixUsed.resize(100);
-	for (int i = 0; i < 100; i++) {
+	modelMatrices.resize(MAX_OBJECT);
+	modelMatrixUsed.resize(MAX_OBJECT);
+	for (int i = 0; i < MAX_OBJECT; i++) {
 		modelMatrixUsed[i] = false;
 	}
 
@@ -24,12 +25,13 @@ Renderer::Renderer(GLuint programID)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	
 	glVertexAttribPointer(
 		0,
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 9,
+		sizeof(Vertex),
 		(void*)0
 	);
 
@@ -39,38 +41,50 @@ Renderer::Renderer(GLuint programID)
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 9,
-		(void*)(sizeof(float) * 3)
+		sizeof(Vertex),
+		(void*)(offsetof(Vertex, color))
 	);
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(
 		2,
-		2,
+		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 9,
-		(void*)(sizeof(float) * 6)
+		sizeof(Vertex),
+		(void*)(offsetof(Vertex, normal))
 	);
 
 
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(
 		3,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(Vertex),
+		(void*)(offsetof(Vertex, texCoord))
+	);
+
+
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(
+		4,
 		1,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 9,
-		(void*)(sizeof(float) * 8)
+		sizeof(Vertex),
+		(void*)(offsetof(Vertex, modelIndex))
 	);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 	this->programID = programID;
+	glUseProgram(programID);
 	modelUniformID = glGetUniformLocation(programID, "M");
-	shadowShaderProgram = LoadShaders("shadowMap.vert", "shadowMap.frag");
-
-	createShadowMap();
+	lightUniformID = glGetUniformLocation(programID, "lightPos");
+	lightPos = glm::vec3(0.0f, 6.0f, 0.0f);
+	glUniform3fv(lightUniformID, 1, &lightPos[0]);
 }
 
 Renderer::~Renderer()
@@ -79,13 +93,20 @@ Renderer::~Renderer()
 	glDeleteVertexArrays(1, &VertexArrayID);
 }
 
-void Renderer::addObject(Object* object)
+bool Renderer::addObject(Object* object)
 {
+		
+
+
+		if(objects.size() >= MAX_OBJECT)
+			return false;
+
+
 		objects.push_back(object);
 
 		
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < MAX_OBJECT; i++) {
 			if (modelMatrixUsed[i] == false) {
 				object->modelIndex = i;
 				modelMatrices[i] = object->getModelMatrix();
@@ -93,6 +114,7 @@ void Renderer::addObject(Object* object)
 				break;
 			}
 		}
+
 
 		for (int i = 0; i < object->data.size(); i++) {
 			object->data[i].modelIndex = object->modelIndex;
@@ -122,7 +144,7 @@ void Renderer::addObject(Object* object)
 		glBindVertexArray(0);
 
 
-
+		return true;
 
 }
 
@@ -160,16 +182,20 @@ void Renderer::removeObject(Object* object)
 
 void Renderer::render()
 {
-	updateShadowMap();
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
-	glUniform1i(glGetUniformLocation(programID, "shadowMap"), 1);
 
 	glUseProgram(programID);
 	glBindVertexArray(VertexArrayID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 
 	glUniformMatrix4fv(modelUniformID, objects.size(), GL_FALSE, &modelMatrices[0][0][0]);
+
+
+	if (textureEnabled) {
+		for(Object* o: objects)
+			glBindTextureUnit(o->modelIndex, o->textureID);
+	}
+
+
 
 	glDrawElements(GL_TRIANGLES, indicies.size(), GL_UNSIGNED_INT, (void*)0);
 
@@ -266,74 +292,3 @@ GLuint Renderer::LoadShaders(const char* vertex_file_path, const char* fragment_
 	return ProgramID;
 }
 
-void Renderer::updateShadowMap()
-{
-
-	glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-	glm::mat4 lightView = glm::lookAt(
-		glm::vec3(0.0f, 10.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(1.0, 0.0, 0.0)
-	);
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-
-	// Use the shadow map framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	// Use depth shader
-	glUseProgram(shadowShaderProgram);
-
-	// Set lightSpaceMatrix uniform in shader
-	// This matrix transforms from world space to light space
-	glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-
-	// Render the scene using the depth shader
-	
-		glBindVertexArray(VertexArrayID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-
-		glUniformMatrix4fv(modelUniformID, objects.size(), GL_FALSE, &modelMatrices[0][0][0]);
-
-		glDrawElements(GL_TRIANGLES, indicies.size(), GL_UNSIGNED_INT, (void*)0);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-
-		glBindVertexArray(0);
-	
-
-	// Reset framebuffer and viewport
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, screenWidth, screenHeight);
-	glUseProgram(0);
-
-
-}
-
-void Renderer::createShadowMap()
-{
-
-
-	// Create framebuffer
-	glGenFramebuffers(1, &shadowMapFBO);
-
-	// Create depth texture
-	glGenTextures(1, &shadowMap);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-	// Attach depth texture to framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
