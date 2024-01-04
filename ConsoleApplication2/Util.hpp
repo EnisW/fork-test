@@ -28,6 +28,7 @@ static float initialFoV;
 #define FILE_VN 0
 #define FILE_VTN 1
 #define FILE_VT 2
+#define FILE_FLAT 3
 
 
 struct _Vertex{

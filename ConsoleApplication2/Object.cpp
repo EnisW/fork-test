@@ -25,6 +25,8 @@ Object::Object(std::string& path, int a)
 		readVTN(path);
 	else if(a == FILE_VN)
 		readVN(path);
+	else if(a == FILE_FLAT)
+		readFlat(path);
 	else
 		loadData(path);
 	modelIndex = 0;
@@ -358,4 +360,32 @@ void Object::readVN(std::string path)
 	this->indices = tempIndexArray;
 
 	file.close();
+}
+
+void Object::readFlat(std::string path)
+{
+	std::fstream file(path);
+	std::vector<Vertex> tempVertexArray;
+	std::vector<unsigned int> tempIndexArray;
+
+	while (!file.eof()) {
+		char line[256];
+		Vertex tempVertex;
+
+		file.getline(line, 256);
+
+		if (line[0] == 'v') {
+			sscanf_s(line, "v %f %f %f %f %f %f %f %f", &tempVertex.pos.x, &tempVertex.pos.y, &tempVertex.pos.z, &tempVertex.texCoord.x
+			, &tempVertex.texCoord.y, &tempVertex.normal.x, &tempVertex.normal.y, &tempVertex.normal.z);
+			tempVertexArray.push_back(tempVertex);
+		}
+		else if (line[0] == 'i') {
+			unsigned int i;
+			sscanf_s(line, "i %u", &i);
+			tempIndexArray.push_back(i);
+		}
+	}
+
+	this->data = tempVertexArray;
+	this->indices = tempIndexArray;
 }

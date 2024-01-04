@@ -57,6 +57,7 @@ public:
 		void readVT(std::string path);
 		void readVTN(std::string path);
 		void readVN(std::string path);
+		void readFlat(std::string path);
 
 		glm::mat4 modelMatrix;
 

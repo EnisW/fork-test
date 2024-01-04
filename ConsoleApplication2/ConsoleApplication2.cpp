@@ -104,19 +104,19 @@ int main(void)
 
 
 
-	GLuint programID = LoadShaders("shader.vert", "shader.frag");
+	//GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
-	//GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
+	GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
 	GLuint programIDGround = LoadShaders("shaderGround.vert", "shaderGround.frag");
 
 	
 
 	Camera camera(programID, programID2, window);
 	camera.addGround(programIDGround);
-	std::string path = "hand.obj";
+	std::string path = "out.obj";
 	std::string path1 = "ground.obj";
 
-	Object squareObject1(path, FILE_VN);
+	Object squareObject1(path, FILE_FLAT);
 	
 
 	Object groundObject(path1);
