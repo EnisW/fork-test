@@ -39,6 +39,7 @@
     <None Include="shadowMap.frag" />
     <None Include="shaderGround.vert" />
     <None Include="shaderGround.frag" />
+    <None Include="..\..\..\objectConverter\objectConverter.py" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp">

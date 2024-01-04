@@ -136,6 +136,7 @@
     <ClCompile Include="Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\objectConverter\objectConverter.py" />
     <None Include="shader.frag" />
     <None Include="shader.vert" />
     <None Include="shaderColored.frag" />
