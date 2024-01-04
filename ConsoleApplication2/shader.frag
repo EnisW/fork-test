@@ -12,7 +12,7 @@ out vec4 FragColor;
 flat in uint outModelIndex;
 in vec2 outUV;
 
-uniform sampler2D sampler[10];
+uniform sampler2D sampler[32];
 
 void main()
 {

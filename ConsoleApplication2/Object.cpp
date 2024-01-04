@@ -15,6 +15,22 @@ Object::Object(std::string& path)
 		loadData(path);
 		modelIndex = 0;
 }
+Object::Object(std::string& path, int a)
+{
+
+	modelMatrix = glm::mat4(1.0f);
+	if(a == FILE_VT)
+		readVT(path);
+	else if(a == FILE_VTN)
+		readVTN(path);
+	else if(a == FILE_VN)
+		readVN(path);
+	else
+		loadData(path);
+	modelIndex = 0;
+}
+
+
 
 Object::~Object()
 {
@@ -32,12 +48,17 @@ void Object::loadData(std::string& path){
 	readVTN(path);
 }
 
+void Object::loadDataVN(std::string& path) {
+
+	readVN(path);
+}
+
 void Object::setTexture(std::string path)
 {
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
 	if (data) {
-		
+		glActiveTexture(GL_TEXTURE0 + modelIndex);
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		if (nrChannels == 3) {
@@ -208,7 +229,7 @@ void Object::readVTN(std::string path)
 
 
 	}
-
+	int a = 0;
 	for (Index x : indices) {
 		Vertex v;
 		unsigned int vPos = 0;
@@ -223,11 +244,112 @@ void Object::readVTN(std::string path)
 			}
 		}
 		if (found) {
+			a++;
 			tempIndexArray.push_back(vPos);
+			if(a % 100 == 0)
+				std::cout << indices.size() << "/" << a << std::endl;
 		}
 		else {
+			a++;
+
 			tempVertexArray.push_back(v);
 			tempIndexArray.push_back(tempVertexArray.size() - 1);
+			if (a % 100 == 0)
+				std::cout << indices.size() << "/" << a << std::endl;
+		}
+	}
+
+
+	this->data = tempVertexArray;
+	this->indices = tempIndexArray;
+
+	file.close();
+}
+
+void Object::readVN(std::string path)
+{
+
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> texCoords;
+	std::vector<glm::vec3> normals;
+	std::vector<Index> indices;
+	std::vector<Vertex> tempVertexArray;
+	std::vector<unsigned int> tempIndexArray;
+	std::vector<glm::vec3> tempNormalArray;
+	std::fstream file(path);
+
+
+	while (!file.eof()) {
+		char line[256];
+		glm::vec3 tempVertex;
+		glm::vec3 tempUV;
+		glm::vec3 tempNormal;
+
+		file.getline(line, 256);
+
+		Index tempI[3];
+		unsigned int i1, i2, i3;
+		
+		unsigned int n1, n2, n3;
+
+		if (line[0] == 'v' && line[1] == ' ') {
+			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
+			vertices.push_back(tempVertex);
+		}
+
+	
+		if (line[0] == 'v' && line[1] == 'n') {
+			sscanf_s(line, "vn %f %f %f", &tempNormal.x, &tempNormal.y, &tempNormal.z);
+			normals.push_back(tempNormal);
+		}
+
+
+		if (line[0] == 'f' && line[1] == ' ') {
+			sscanf_s(line, "f %u//%u %u//%u %u//%u", &i1, &n1, &i2,  &n2, &i3,  &n3);
+			tempI[0].vertex = i1 - 1;
+			tempI[1].vertex = i2 - 1;
+			tempI[2].vertex = i3 - 1;
+			tempI[0].texture = 0;
+			tempI[1].texture = 0;
+			tempI[2].texture = 0;
+			tempI[0].normal = n1 - 1;
+			tempI[1].normal = n2 - 1;
+			tempI[2].normal = n3 - 1;
+
+			indices.push_back(tempI[0]);
+			indices.push_back(tempI[1]);
+			indices.push_back(tempI[2]);
+
+		}
+
+
+	}
+	int a = 0;
+	for (Index x : indices) {
+		Vertex v;
+		unsigned int vPos = 0;
+		v.pos = vertices[x.vertex];
+		v.normal = normals[x.normal];
+		bool found = false;
+		for (; vPos < tempVertexArray.size(); vPos++) {
+			if (v.pos == tempVertexArray[vPos].pos && v.normal == tempVertexArray[vPos].normal) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			a++;
+			tempIndexArray.push_back(vPos);
+			if (a % 100 == 0)
+				std::cout << indices.size() << "/" << a << std::endl;
+		}
+		else {
+			a++;
+			tempVertexArray.push_back(v);
+			tempIndexArray.push_back(tempVertexArray.size() - 1);
+			if (a % 100 == 0)
+				std::cout << indices.size() << "/" << a << std::endl;
+
 		}
 	}
 

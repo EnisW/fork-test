@@ -81,6 +81,11 @@ Renderer::Renderer(GLuint programID)
 	glBindVertexArray(0);
 	this->programID = programID;
 	glUseProgram(programID);
+	int samplers[32];
+	for (int i = 0; i < 32; i++) {
+		samplers[i] = i;
+	}
+	glUniform1iv(glGetUniformLocation(programID, "sampler"), 32, samplers);
 	modelUniformID = glGetUniformLocation(programID, "M");
 	lightUniformID = glGetUniformLocation(programID, "lightPos");
 	lightPos = glm::vec3(0.0f, 6.0f, 0.0f);
@@ -142,6 +147,8 @@ bool Renderer::addObject(Object* object)
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+
+		
 
 
 		return true;

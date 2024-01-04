@@ -9,6 +9,7 @@ class Object
 public:
 	Object(std::vector<Vertex> data);
 	Object(std::string& path);
+	Object(std::string& path, int a);
 	~Object();
 
 	void setData(std::vector<Vertex> data) {
@@ -41,7 +42,7 @@ public:
 		return modelMatrix;
 	};
 
-	
+	void loadDataVN(std::string& path);
 
 	float modelIndex;
 	std::vector<Vertex> data;
@@ -55,6 +56,7 @@ public:
 	private:
 		void readVT(std::string path);
 		void readVTN(std::string path);
+		void readVN(std::string path);
 
 		glm::mat4 modelMatrix;
 

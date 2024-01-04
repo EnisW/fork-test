@@ -3,10 +3,10 @@
 Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	position = glm::vec3(0, 0, 10);
+	position = glm::vec3(10, 10, 10);
 
 	// horizontal angle : toward -Z
-	horizontalAngle = 3.14f;
+	horizontalAngle = 0.0f;
 	// vertical angle : 0, look at the horizon
 	verticalAngle = 0.0f;
 	// Initial Field of View
@@ -14,20 +14,21 @@ Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 	lastTime = glfwGetTime();
 	glfwSetScrollCallback(window, scroll_callback);
 	speed = 5.0f; // 3 units / second
-	mouseSpeed = 0.10f;
+	mouseSpeed = 0.20f;
 	this->window = window;
 	programID = ID;
 	programID2 = ID2;
-	matrixID = glGetUniformLocation(programID, "VP");
+	glUseProgram(programID2);
 	matrixID2 = glGetUniformLocation(programID2, "VP");
 	glUseProgram(programID);
 	viewPosID = glGetUniformLocation(programID, "viewPos");
-	
+	matrixID = glGetUniformLocation(programID, "VP");
+
 
 
 	glUniform3fv(viewPosID, 1, &position[0]);
 	
-	glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 1000.0f);
 
 	// Camera matrix
 	glm::mat4 View = glm::lookAt(
@@ -45,6 +46,7 @@ Camera::~Camera()
 
 void Camera::update()
 {
+
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
@@ -54,6 +56,8 @@ void Camera::update()
 	lastTime = currentTime;
 	horizontalAngle += mouseSpeed * deltaTime * float(1024 / 2 - xpos);
 	verticalAngle += mouseSpeed * deltaTime * float(768 / 2 - ypos);
+
+
 
 	glm::vec3 direction(
 		cos(verticalAngle) * sin(horizontalAngle),

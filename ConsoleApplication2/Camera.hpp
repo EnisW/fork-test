@@ -42,6 +42,8 @@ private:
 	float lastTime;
 
 
+
+
 	float speed; 
 	float mouseSpeed;
 

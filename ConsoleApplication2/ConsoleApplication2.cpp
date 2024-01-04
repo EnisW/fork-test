@@ -65,16 +65,9 @@ int main(void)
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
+	glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
 	
-
-
-
-
-
-
 
 
 	GLuint VertexArrayID;
@@ -111,44 +104,43 @@ int main(void)
 
 
 
-	//GLuint programID = LoadShaders("shader.vert", "shader.frag");
+	GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
-	GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
+	//GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
 	GLuint programIDGround = LoadShaders("shaderGround.vert", "shaderGround.frag");
 
 	
 
 	Camera camera(programID, programID2, window);
 	camera.addGround(programIDGround);
-	std::string path = "untitled.obj";
+	std::string path = "hand.obj";
 	std::string path1 = "ground.obj";
 
-	Object squareObject1(path);
-	Object squareObject2(path);
+	Object squareObject1(path, FILE_VN);
+	
 
 	Object groundObject(path1);
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-	squareObject2.move(vec3(0.0f, 4.0f, 4.0f));
-
+	
 	groundObject.move(vec3(0.0f, -5.0f, 0.0f));
 	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
-	squareObject1.setTexture("image.png");
-	squareObject2.setTexture("aa.png");
-	squareObject2.setColor(vec3(1.0f, 1.0f, 0.0f));
 
 
 
 	Renderer renderer = Renderer(programID);
-	renderer.addObject(&squareObject2);
 	renderer.addObject(&squareObject1);
+
+
 	renderer.textureEnabled = false;
+	
 	Renderer rendererGround = Renderer(programIDGround);
 	rendererGround.addObject(&groundObject);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	
+	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+
 
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
