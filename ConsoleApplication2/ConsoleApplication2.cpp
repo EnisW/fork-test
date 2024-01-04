@@ -124,14 +124,21 @@ int main(void)
 	std::string path1 = "ground.obj";
 
 	Object squareObject1(path);
+	Object squareObject2(path);
+
 	Object groundObject(path1);
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
+	squareObject2.move(vec3(0.0f, 4.0f, 4.0f));
+
 	groundObject.move(vec3(0.0f, 0.0f, 0.0f));
 	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
 	squareObject1.setTexture("image.png");
+	squareObject2.setTexture("aa.png");
+
 
 
 	Renderer renderer = Renderer(programID);
+	renderer.addObject(&squareObject2);
 	renderer.addObject(&squareObject1);
 	Renderer rendererGround = Renderer(programIDGround);
 	rendererGround.addObject(&groundObject);

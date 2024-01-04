@@ -9,7 +9,7 @@ in vec3 outNormal;
 in vec3 fragPos;
 in vec3 fragPosRaw;
 out vec4 FragColor;
-in uint outModelIndex;
+in flat uint outModelIndex;
 in vec2 outUV;
 
 uniform sampler2D sampler[10];
