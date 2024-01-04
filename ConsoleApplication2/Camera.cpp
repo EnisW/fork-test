@@ -22,8 +22,7 @@ Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 	matrixID2 = glGetUniformLocation(programID2, "VP");
 	glUseProgram(programID);
 	viewPosID = glGetUniformLocation(programID, "viewPos");
-	glUseProgram(programGround);
-	viewPosIDGround = glGetUniformLocation(programGround, "viewPos");
+	
 
 
 	glUniform3fv(viewPosID, 1, &position[0]);
@@ -104,14 +103,24 @@ void Camera::update()
 	setMVP(ProjectionMatrix * ViewMatrix);
 	glUseProgram(programID);
 	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP[0][0]);
+	glUniform3fv(viewPosID, 1, &position[0]);
+
 	glUseProgram(programGround);
 	glUniformMatrix4fv(matrixIDGround, 1, GL_FALSE, &MVP[0][0]);
+	glUniform3fv(viewPosIDGround, 1, &position[0]);
+
 	glUseProgram(programID2);
 	glUniformMatrix4fv(matrixID2, 1, GL_FALSE, &MVP[0][0]);
-	glUseProgram(programID);
-	glUniform3fv(viewPosID, 1, &position[0]);
+	
+
+}
+
+void Camera::addGround(GLuint programID)
+{
+	programGround = programID;
 	glUseProgram(programGround);
-	glUniform3fv(viewPosIDGround, 1, &position[0]);
+	viewPosIDGround = glGetUniformLocation(programGround, "viewPos");
+	matrixIDGround = glGetUniformLocation(programGround, "VP");
 }
 
 

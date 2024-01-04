@@ -10,6 +10,8 @@ in vec3 fragPos;
 in vec3 fragPosRaw;
 out vec4 FragColor;
 
+
+
 void main()
 {
 	vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -32,7 +34,6 @@ void main()
     vec3 specular = specularStrength * spec * lightColor;
 
     vec3 gridColor;
-
     if(mod(fragPosRaw.x, 2.0) < 1.0 && mod(fragPosRaw.z, 2.0) < 1.0)
 	{
 		gridColor = vec3(0.0, 0.0, 0.0);

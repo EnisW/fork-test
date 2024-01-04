@@ -21,5 +21,4 @@ void main(){
 	outNormal = mat3(transpose(inverse(M[int(modelIndex)]))) * inNormal;
 	fragPos = vec3(M[int(modelIndex)] * vec4(inPos, 1));
 	fragPosRaw = inPos;
-
 }

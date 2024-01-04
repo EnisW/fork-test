@@ -111,16 +111,16 @@ int main(void)
 
 
 
-	GLuint programID = LoadShaders("shader.vert", "shader.frag");
+	//GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
-	GLuint programIDColored = LoadShaders("shaderColored.vert", "shaderColored.frag");
+	GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
 	GLuint programIDGround = LoadShaders("shaderGround.vert", "shaderGround.frag");
 
 	
 
 	Camera camera(programID, programID2, window);
-	camera.setGroundProgram(programIDGround);
-	std::string path = "untitled1.obj";
+	camera.addGround(programIDGround);
+	std::string path = "untitled.obj";
 	std::string path1 = "ground.obj";
 
 	Object squareObject1(path);
@@ -130,16 +130,18 @@ int main(void)
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
 	squareObject2.move(vec3(0.0f, 4.0f, 4.0f));
 
-	groundObject.move(vec3(0.0f, 0.0f, 0.0f));
+	groundObject.move(vec3(0.0f, -5.0f, 0.0f));
 	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
 	squareObject1.setTexture("image.png");
 	squareObject2.setTexture("aa.png");
+	squareObject2.setColor(vec3(1.0f, 1.0f, 0.0f));
 
 
 
 	Renderer renderer = Renderer(programID);
 	renderer.addObject(&squareObject2);
 	renderer.addObject(&squareObject1);
+	renderer.textureEnabled = false;
 	Renderer rendererGround = Renderer(programIDGround);
 	rendererGround.addObject(&groundObject);
 

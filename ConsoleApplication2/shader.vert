@@ -10,7 +10,7 @@ out vec3 fragPos;
 out vec3 outColor;
 out vec3 outNormal;
 out vec2 outUV;
-out flat uint outModelIndex;
+flat out  uint outModelIndex;
 
 uniform mat4 M[100];
 uniform mat4 VP;

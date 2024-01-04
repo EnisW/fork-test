@@ -20,10 +20,7 @@ public:
 
 	}
 
-	void setGroundProgram(GLuint program) {
-		programGround = program;
-		matrixIDGround = glGetUniformLocation(programGround, "VP");
-	}
+	void addGround(GLuint programID);
 	
 private:
 	GLuint programID;
