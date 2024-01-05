@@ -1,7 +1,10 @@
 #include "Camera.hpp"
 
-Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
+Camera::Camera(GLFWwindow* window)
 {
+	programs = std::vector<GLuint>();
+	matrixIDs = std::vector<GLuint>();
+	viewPosIDs = std::vector<GLuint>();
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	position = glm::vec3(10, 10, 10);
 
@@ -16,17 +19,6 @@ Camera::Camera(GLuint ID, GLuint ID2, GLFWwindow* window)
 	speed = 5.0f; // 3 units / second
 	mouseSpeed = 0.20f;
 	this->window = window;
-	programID = ID;
-	programID2 = ID2;
-	glUseProgram(programID2);
-	matrixID2 = glGetUniformLocation(programID2, "VP");
-	glUseProgram(programID);
-	viewPosID = glGetUniformLocation(programID, "viewPos");
-	matrixID = glGetUniformLocation(programID, "VP");
-
-
-
-	glUniform3fv(viewPosID, 1, &position[0]);
 	
 	glm::mat4 Projection = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 1000.0f);
 
@@ -49,13 +41,13 @@ void Camera::update()
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+	glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 
 	float currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
 	lastTime = currentTime;
-	horizontalAngle += mouseSpeed * deltaTime * float(1024 / 2 - xpos);
-	verticalAngle += mouseSpeed * deltaTime * float(768 / 2 - ypos);
+	horizontalAngle += mouseSpeed * deltaTime * float(WIDTH / 2 - xpos);
+	verticalAngle += mouseSpeed * deltaTime * float(HEIGHT / 2 - ypos);
 
 
 
@@ -105,26 +97,19 @@ void Camera::update()
 	);
 
 	setMVP(ProjectionMatrix * ViewMatrix);
-	glUseProgram(programID);
-	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP[0][0]);
-	glUniform3fv(viewPosID, 1, &position[0]);
-
-	glUseProgram(programGround);
-	glUniformMatrix4fv(matrixIDGround, 1, GL_FALSE, &MVP[0][0]);
-	glUniform3fv(viewPosIDGround, 1, &position[0]);
-
-	glUseProgram(programID2);
-	glUniformMatrix4fv(matrixID2, 1, GL_FALSE, &MVP[0][0]);
-	
+	for (int i = 0; i < programs.size(); i++) {
+			glUseProgram(programs[i]);
+			glUniformMatrix4fv(matrixIDs[i], 1, GL_FALSE, &MVP[0][0]);
+			glUniform3fv(viewPosIDs[i], 1, &position[0]);
+	}
 
 }
 
-void Camera::addGround(GLuint programID)
+void Camera::addProgram(GLuint programID)
 {
-	programGround = programID;
-	glUseProgram(programGround);
-	viewPosIDGround = glGetUniformLocation(programGround, "viewPos");
-	matrixIDGround = glGetUniformLocation(programGround, "VP");
+	programs.push_back(programID);
+	matrixIDs.push_back(glGetUniformLocation(programID, "VP"));
+	viewPosIDs.push_back(glGetUniformLocation(programID, "viewPos"));
 }
 
 

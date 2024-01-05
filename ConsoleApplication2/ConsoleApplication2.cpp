@@ -2,6 +2,8 @@
 #include "Camera.hpp"
 #include "Object.hpp"
 #include "Render.hpp"
+#include "userInterface.hpp"
+
 
 using namespace glm;
 
@@ -45,7 +47,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1024, 768, "Deneme", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Deneme", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
@@ -62,6 +64,7 @@ int main(void)
 		return -1;
 	}
 
+	
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -111,8 +114,10 @@ int main(void)
 
 	
 
-	Camera camera(programID, programID2, window);
-	camera.addGround(programIDGround);
+	Camera camera(window);
+	camera.addProgram(programID);
+	camera.addProgram(programID2);
+	camera.addProgram(programIDGround);
 	std::string path = "out.obj";
 	std::string path1 = "ground.obj";
 
@@ -139,8 +144,14 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+	glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 
+	std::vector<Renderer*> renderQueue;
+	renderQueue.push_back(&renderer);
+	renderQueue.push_back(&rendererGround);
+
+	userInterface ui;
+	std::thread loopThread(&userInterface::loop, &ui, &renderQueue, &camera);
 
 	do {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -153,8 +164,8 @@ int main(void)
 		glBindVertexArray(VertexArrayID);
 
 		glDrawArrays(GL_LINES, 0, 8);
-		renderer.render();
-		rendererGround.render();
+		for(Renderer* r: renderQueue)
+			r->render();
 		camera.update();
 
 		// Swap buffers
@@ -167,12 +178,9 @@ int main(void)
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
-
+	loopThread.join();
 	return 0;
 }
-
-
-
 
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path) {
 
@@ -262,3 +270,4 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 
 	return ProgramID;
 }
+

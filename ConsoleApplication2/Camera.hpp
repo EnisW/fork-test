@@ -5,7 +5,7 @@ class Camera
 {
 
 public:
-	Camera(GLuint, GLuint,GLFWwindow*);
+	Camera(GLFWwindow*);
 	~Camera();
 
 
@@ -20,18 +20,10 @@ public:
 
 	}
 
-	void addGround(GLuint programID);
+	void addProgram(GLuint programID);
 	
 private:
-	GLuint programID;
-	GLuint programID2;
-	GLuint programGround;
-	GLuint matrixID;
-	GLuint matrixID2;
-	GLuint matrixIDGround;
-
-	GLuint viewPosID;
-	GLuint viewPosIDGround;
+	
 
 	glm::mat4 MVP;
 	GLFWwindow* window;
@@ -41,8 +33,9 @@ private:
 	float verticalAngle;
 	float lastTime;
 
-
-
+	std::vector<GLuint> programs;
+	std::vector<GLuint> matrixIDs;
+	std::vector<GLuint> viewPosIDs;
 
 	float speed; 
 	float mouseSpeed;

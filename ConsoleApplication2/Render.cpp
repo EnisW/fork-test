@@ -5,8 +5,8 @@
 
 Renderer::Renderer(GLuint programID)
 {
-	screenHeight = 768;
-	screenWidth = 1024;
+	screenHeight = HEIGHT;
+	screenWidth = WIDTH;
 
 	textureEnabled = false;
 

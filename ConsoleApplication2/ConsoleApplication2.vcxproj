@@ -134,6 +134,7 @@
     <ClCompile Include="ConsoleApplication2.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Render.cpp" />
+    <ClCompile Include="userInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\objectConverter\objectConverter.py" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Object.hpp" />
     <ClInclude Include="Render.hpp" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="userInterface.hpp" />
     <ClInclude Include="Util.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
