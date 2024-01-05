@@ -34,6 +34,10 @@ public:
 		modelMatrix = glm::translate(modelMatrix, movement);
 	};
 
+	void scale(glm::vec3 scale) {
+		modelMatrix = glm::scale(modelMatrix, scale);
+	};
+
 	void setModelMatrix(glm::mat4 modelMatrix) {
 		this->modelMatrix = modelMatrix;
 	};

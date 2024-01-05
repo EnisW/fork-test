@@ -133,7 +133,6 @@ int main(void)
 
 
 	Renderer renderer = Renderer(programID);
-	renderer.addObject(&squareObject1);
 
 
 	renderer.textureEnabled = false;
@@ -149,11 +148,12 @@ int main(void)
 	std::vector<Renderer*> renderQueue;
 	renderQueue.push_back(&renderer);
 	renderQueue.push_back(&rendererGround);
+	int command = 0;
 
 	userInterface ui;
 	std::thread loopThread(&userInterface::loop, &ui, &renderQueue, &camera);
-
 	do {
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -178,6 +178,7 @@ int main(void)
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
+	
 	loopThread.join();
 	return 0;
 }

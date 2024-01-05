@@ -13,7 +13,7 @@ public:
 
 	bool addObject(Object* object);
 	void removeObject(Object* object);
-
+	void addObjectToQueue(Object* object);
 
 	void render();
 
@@ -32,6 +32,7 @@ private:
 	GLuint shadowShaderProgram;
 
 	std::vector<Object*> objects;
+	std::vector<Object*> objectQueue;
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indicies;
 

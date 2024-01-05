@@ -149,7 +149,7 @@ bool Renderer::addObject(Object* object)
 		glBindVertexArray(0);
 
 		
-
+		std::cout << "added object" << std::endl;
 
 		return true;
 
@@ -187,8 +187,19 @@ void Renderer::removeObject(Object* object)
 	*/
 }
 
+void Renderer::addObjectToQueue(Object* object)
+{
+	objectQueue.push_back(object);
+}
+
 void Renderer::render()
 {
+
+	for (Object* o : objectQueue) {
+		addObject(o);
+	}
+
+	objectQueue.clear();
 
 	glUseProgram(programID);
 	glBindVertexArray(VertexArrayID);

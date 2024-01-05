@@ -46,8 +46,53 @@ void userInterface::loop(std::vector<Renderer*>* renderQueue, Camera* camera)
 		return;
 	}
 
-	recv(client_sock, buffer, 1024, 0);
-	std::cout << buffer << std::endl;
+	std::cout << "connection accepted" << std::endl;
+	while (recv(client_sock, buffer, 1024, 0) != 0) {
+		//split buffer into tokens and store in vector of strings 
+		std::vector<std::string> tokens;
+		std::string token;
+		std::istringstream tokenStream(buffer);
+		while (std::getline(tokenStream, token, ' '))
+		{
+			tokens.push_back(token);
+		}
+		if (tokens[0] == "exit") {
+			break;
+		}
+		else if (tokens[0] == "load") {
+			std::string path = tokens[1];
+
+			float x = std::stof(tokens[2]);
+			float y = std::stof(tokens[3]);
+			float z = std::stof(tokens[4]);
+			float r = std::stof(tokens[5]);
+			float g = std::stof(tokens[6]);
+			float b = std::stof(tokens[7]);
+			float scalex = std::stof(tokens[8]);
+			float scaley = std::stof(tokens[9]);
+			float scalez = std::stof(tokens[10]);
+
+			if(tokens[11] == "true")
+				renderQueue->at(0)->textureEnabled = true;
+			else
+				renderQueue->at(0)->textureEnabled = false;
+
+			std::cout << path << " " << x << " " << y << " " << z << std::endl;
+
+			Object* obj = new Object(path, FILE_FLAT);
+			obj->move(glm::vec3(x, y, z));
+			obj->setColor(glm::vec3(r, g, b));
+			obj->scale(glm::vec3(scalex, scaley, scalez));
+			renderQueue->at(0)->addObjectToQueue(obj);
+			
+
+		
+		}
+
+
+
+
+	}
 	
 
 
