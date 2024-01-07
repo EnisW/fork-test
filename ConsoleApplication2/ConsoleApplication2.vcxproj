@@ -111,6 +111,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glew-2.1.0\lib\Release\x64;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,6 +135,7 @@
     <ClCompile Include="ConsoleApplication2.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Render.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="userInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +148,8 @@
     <None Include="shaderGround.vert" />
     <None Include="shaderLine.frag" />
     <None Include="shaderLine.vert" />
+    <None Include="shaderText.frag" />
+    <None Include="shaderText.vert" />
     <None Include="shadowMap.frag" />
     <None Include="shadowMap.vert" />
   </ItemGroup>
@@ -154,8 +158,12 @@
     <ClInclude Include="Object.hpp" />
     <ClInclude Include="Render.hpp" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextRenderer.hpp" />
     <ClInclude Include="userInterface.hpp" />
     <ClInclude Include="Util.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\font.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

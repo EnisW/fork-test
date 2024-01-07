@@ -30,6 +30,9 @@
     <ClCompile Include="userInterface.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.vert" />
@@ -43,6 +46,8 @@
     <None Include="shaderGround.vert" />
     <None Include="shaderGround.frag" />
     <None Include="..\..\..\objectConverter\objectConverter.py" />
+    <None Include="shaderText.vert" />
+    <None Include="shaderText.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp">
@@ -63,5 +68,13 @@
     <ClInclude Include="userInterface.hpp">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
+    <ClInclude Include="TextRenderer.hpp">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\font.png">
+      <Filter>Kaynak Dosyaları</Filter>
+    </Image>
   </ItemGroup>
 </Project>

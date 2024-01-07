@@ -8,6 +8,7 @@ class Renderer {
 
 
 public:
+	Renderer();
 	Renderer(GLuint programID);
 	~Renderer();
 
@@ -15,11 +16,11 @@ public:
 	void removeObject(Object* object);
 	void addObjectToQueue(Object* object);
 
-	void render();
+	virtual void render();
 
 	bool textureEnabled;
 
-private:
+protected:
 
 	GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 	GLuint screenHeight, screenWidth;
@@ -34,7 +35,7 @@ private:
 	std::vector<Object*> objects;
 	std::vector<Object*> objectQueue;
 	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indicies;
+	std::vector<unsigned int> indices;
 
 	std::vector<glm::mat4> modelMatrices;
 	glm::vec3 lightPos;

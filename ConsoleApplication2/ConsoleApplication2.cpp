@@ -3,7 +3,7 @@
 #include "Object.hpp"
 #include "Render.hpp"
 #include "userInterface.hpp"
-
+#include "TextRenderer.hpp"
 
 using namespace glm;
 
@@ -104,7 +104,10 @@ int main(void)
 		sizeof(float) * 6,
 		(void*)(sizeof(float) * 3)
 	);
-
+	Text t;
+	t.text = "Hello World";
+	t.x = 50;
+	t.y = 50;
 
 
 	//GLuint programID = LoadShaders("shader.vert", "shader.frag");
@@ -112,6 +115,9 @@ int main(void)
 	GLuint programID = LoadShaders("shaderColored.vert", "shaderColored.frag");
 	GLuint programIDGround = LoadShaders("shaderGround.vert", "shaderGround.frag");
 
+	TextRenderer textRenderer = TextRenderer();
+	textRenderer.setBitmapFont("font.png");
+	textRenderer.addText(t);
 	
 
 	Camera camera(window);
@@ -142,12 +148,15 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glfwSetCursorPos(window, WIDTH / 2, HEIGHT / 2);
 
 	std::vector<Renderer*> renderQueue;
 	renderQueue.push_back(&renderer);
 	renderQueue.push_back(&rendererGround);
+	renderQueue.push_back(&textRenderer);
 	int command = 0;
 
 	userInterface ui;

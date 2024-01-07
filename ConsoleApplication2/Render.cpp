@@ -3,6 +3,10 @@
 
 
 
+Renderer::Renderer()
+{
+}
+
 Renderer::Renderer(GLuint programID)
 {
 	screenHeight = HEIGHT;
@@ -133,7 +137,7 @@ bool Renderer::addObject(Object* object)
 		std::vector<unsigned int> indicies_t = object->getIndices();
 		object->elementBufferBias = bias;
 		for (int i = 0; i < indicies_t.size(); i++) {
-			this->indicies.push_back(indicies_t[i] + bias);
+			this->indices.push_back(indicies_t[i] + bias);
 		}
 
 
@@ -142,7 +146,7 @@ bool Renderer::addObject(Object* object)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indicies.size(), &this->indicies[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * this->indices.size(), &this->indices[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -169,7 +173,7 @@ void Renderer::removeObject(Object* object)
 
 	std::vector<unsigned int> indicies_t = object->getIndices();
 	for (int i = 0; i < indicies_t.size(); i++) {
-		this->indicies.erase(std::remove(this->indicies.begin(), this->indicies.end(), indicies_t[i]), this->indicies.end());
+		this->indices.erase(std::remove(this->indices.begin(), this->indices.end(), indicies_t[i]), this->indices.end());
 	}
 
 
@@ -179,7 +183,7 @@ void Renderer::removeObject(Object* object)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indicies.size(), &indicies[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -215,7 +219,7 @@ void Renderer::render()
 
 
 
-	glDrawElements(GL_TRIANGLES, indicies.size(), GL_UNSIGNED_INT, (void*)0);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
