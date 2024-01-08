@@ -105,10 +105,10 @@ int main(void)
 		(void*)(sizeof(float) * 3)
 	);
 	Text t;
-	t.text = "Hello World";
-	t.x = 50;
-	t.y = 50;
-
+	t.text = "drone1: x-10 y-10 z-10";
+	t.x = 100;
+	t.y = 100;
+	std::cout<< t.text << std::endl;
 
 	//GLuint programID = LoadShaders("shader.vert", "shader.frag");
 	GLuint programID2 = LoadShaders("shaderLine.vert", "shaderLine.frag");
@@ -117,8 +117,8 @@ int main(void)
 
 	TextRenderer textRenderer = TextRenderer();
 	textRenderer.setBitmapFont("font.png");
-	textRenderer.addText(t);
-	
+	textRenderer.setScale(3.0f);
+
 
 	Camera camera(window);
 	camera.addProgram(programID);
@@ -148,6 +148,7 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -158,7 +159,7 @@ int main(void)
 	renderQueue.push_back(&rendererGround);
 	renderQueue.push_back(&textRenderer);
 	int command = 0;
-
+	camera.addTextShader(textRenderer.getProgramID());
 	userInterface ui;
 	std::thread loopThread(&userInterface::loop, &ui, &renderQueue, &camera);
 	do {

@@ -97,6 +97,9 @@ void Camera::update()
 	);
 
 	setMVP(ProjectionMatrix * ViewMatrix);
+	glUseProgram(textProgramID);
+	glUniformMatrix4fv(textMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+
 	for (int i = 0; i < programs.size(); i++) {
 			glUseProgram(programs[i]);
 			glUniformMatrix4fv(matrixIDs[i], 1, GL_FALSE, &MVP[0][0]);
@@ -110,6 +113,12 @@ void Camera::addProgram(GLuint programID)
 	programs.push_back(programID);
 	matrixIDs.push_back(glGetUniformLocation(programID, "VP"));
 	viewPosIDs.push_back(glGetUniformLocation(programID, "viewPos"));
+}
+
+void Camera::addTextShader(GLuint programID)
+{
+	textProgramID = programID;
+	textMatrixID = glGetUniformLocation(programID, "P");
 }
 
 

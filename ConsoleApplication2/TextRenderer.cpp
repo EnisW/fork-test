@@ -3,6 +3,7 @@
 
 TextRenderer::TextRenderer()
 {
+	scale = 1.0f;
 	this->programID = LoadShaders("shaderText.vert", "shaderText.frag");
 	glUseProgram(this->programID);
 	screenHeight = HEIGHT;
@@ -81,41 +82,51 @@ TextRenderer::TextRenderer()
 }
 void TextRenderer::addText(Text& text)
 {
-	
 	texts.push_back(text);
 	float currentXBase = text.x;
 	float currentYBase = text.y;
 
 	int textLength = text.text.length();
+	int skip = 0;
 	for (int i = 0; i < textLength; ++i) {
+
 		char currentChar = text.text[i];
-		if (currentChar == '\n') {
-			currentXBase = text.x;
-			currentYBase -= font_Arial.height;
+		Character currentCharacter = font_Arial.characters[currentChar - 32];
+		if (currentChar == ' ') {
+			currentXBase += (float)font_Arial.characters[16].width / scale / 2;
+			skip++;
 			continue;
 		}
-		Character currentCharacter = font_Arial.characters[currentChar - 32];
+
+		if (currentChar == '|') {
+			currentXBase = text.x;
+			currentYBase += (float)currentCharacter.height/ (float)2;
+			skip++;
+			continue;
+		}
+
 		float u1, v1, u2, v2;
-		CalculateUV(currentCharacter, u1, v1, u2, v2);
-		float currentX = (currentXBase + currentCharacter.originX) ;
-		float currentY = (currentYBase + currentCharacter.originY) ;
+		CalculateUV(currentCharacter, u1, v2, u2, v1);
+		float currentX = ((currentXBase) / WIDTH)*2.0f - 1.0f;
+		float currentY = -(((currentYBase) / HEIGHT)*2.0f - 1.0f);
+
 		Vertex vertex1 = { glm::vec3(currentX , currentY , 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u1, v1), 0 };
-		Vertex vertex2 = { glm::vec3(currentX + currentCharacter.width , currentY , 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u2, v1), 0};
-		Vertex vertex3 = { glm::vec3(currentX , currentY + currentCharacter.height , 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u1, v2), 0};
-		Vertex vertex4 = { glm::vec3(currentX + currentCharacter.width , currentY + currentCharacter.height , 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u2, v2), 0};
+		Vertex vertex2 = { glm::vec3(currentX + (float)currentCharacter.width / WIDTH/ scale, currentY , 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u2, v1), 0};
+		Vertex vertex3 = { glm::vec3(currentX , currentY + (float)currentCharacter.height / HEIGHT / scale, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u1, v2), 0};
+		Vertex vertex4 = { glm::vec3(currentX + (float)currentCharacter.width / WIDTH / scale, currentY + (float)currentCharacter.height / HEIGHT / scale, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec2(u2, v2), 0};
 
 		vertices.push_back(vertex1);
 		vertices.push_back(vertex2);
 		vertices.push_back(vertex3);
 		vertices.push_back(vertex4);
 
-		indices.push_back(0 + i * 4);
-		indices.push_back(1 + i * 4);
-		indices.push_back(2 + i * 4);
-		indices.push_back(1 + i * 4);
-		indices.push_back(2 + i * 4);
-		indices.push_back(3 + i * 4);
-		currentXBase += currentCharacter.width;
+		indices.push_back(2 + (i-skip) * 4);
+		indices.push_back(0 + (i - skip) * 4);
+		indices.push_back(1 + (i - skip) * 4);
+		indices.push_back(2 + (i - skip) * 4);
+		indices.push_back(1 + (i - skip) * 4);
+		indices.push_back(3 + (i - skip) * 4);
+		currentXBase += (float)currentCharacter.width/ scale/2;
 	}
 	glBindVertexArray(VertexArrayID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -135,19 +146,21 @@ void TextRenderer::setBitmapFont(std::string fontName)
 {
 	glUseProgram(this->programID);
 	charUVs.resize(95);
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(fontName.c_str(), &width, &height, &nrChannels, 0);
+	int nrChannels;
+	unsigned char* data = stbi_load(fontName.c_str(), &textureWidth, &textureHeight, &nrChannels, 0);
+	
 	if (data) {
 		glActiveTexture(GL_TEXTURE0 );
 		glGenTextures(1, &textureID);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		if (nrChannels == 3) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB,
 				GL_UNSIGNED_BYTE, data);
 		}
 		else if (nrChannels == 4) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA,
 				GL_UNSIGNED_BYTE, data);
+			std::cout << "Texture format supported" << std::endl;
 		}
 		else {
 			std::cout << "Texture format not supported" << std::endl;
@@ -199,8 +212,21 @@ void TextRenderer::render()
 
 void TextRenderer::CalculateUV(Character character, float& u1, float& v1, float& u2, float& v2) {
     // Calculate normalized texture coordinates
-    u1 = static_cast<float>(character.x) / textureWidth;
-    v1 = static_cast<float>(character.y) / textureHeight;
-    u2 = static_cast<float>(character.x + character.width) / textureWidth;
-    v2 = static_cast<float>(character.y + character.height) / textureHeight;
+    u1 = static_cast<float>(character.x) / (float)textureWidth;
+    v1 = static_cast<float>(character.y) / (float)textureHeight;
+    u2 = static_cast<float>(character.x + character.width) / (float)textureWidth;
+    v2 = static_cast<float>(character.y + character.height) / (float)textureHeight;
+}
+
+void TextRenderer::setData(std::vector<Vertex>& data, std::vector<unsigned int>& indices)
+{
+	
+		this->vertices = data;
+		this->indices = indices;
+		glBindVertexArray(VertexArrayID);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
 }

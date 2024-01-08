@@ -21,13 +21,17 @@ public:
 	}
 
 	void addProgram(GLuint programID);
-	
+	void addTextShader(GLuint programID);
+
 private:
 	
 
 	glm::mat4 MVP;
 	GLFWwindow* window;
 	glm::vec3 position;
+	
+	GLuint textProgramID;
+	GLuint textMatrixID;
 
 	float horizontalAngle;
 	float verticalAngle;

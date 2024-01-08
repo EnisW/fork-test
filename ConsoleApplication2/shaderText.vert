@@ -10,6 +10,7 @@ out vec3 outColor;
 out vec2 outUV;
 flat out  uint outModelIndex;
 
+uniform mat4 P;
 
 
 void main(){
