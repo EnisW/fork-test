@@ -3,21 +3,45 @@
 
 Object::Object(std::vector<Vertex> data)
 {
+	physicsEnabled = true;
+	position = glm::vec3(0, 0, 0);
+	velocity = glm::vec3(0, 0, 0);
+	acceleration = glm::vec3(0, 0, 0);
+	thrustForce = glm::vec3(0, 0, 0);
+	size = glm::vec3(0, 0, 0);
 	modelMatrix = glm::mat4(1.0f);
-	this->data = data;
 	modelIndex = 0;
+	objScale = glm::vec3(1.0f, 1.0f, 1.0f);
+	this->data = data;
+
 }
 
 Object::Object(std::string& path)
 {
-		modelMatrix = glm::mat4(1.0f);
-		loadData(path);
-		modelIndex = 0;
+	physicsEnabled = true;
+	position = glm::vec3(0, 0, 0);
+	velocity = glm::vec3(0, 0, 0);
+	acceleration = glm::vec3(0, 0, 0);
+	thrustForce = glm::vec3(0, 0, 0);
+	size = glm::vec3(0, 0, 0);
+	modelMatrix = glm::mat4(1.0f);
+	modelIndex = 0;
+	objScale = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	loadData(path);
 }
 Object::Object(std::string& path, int a)
 {
-
+	physicsEnabled = true;
+	position = glm::vec3(0, 0, 0);
+	velocity = glm::vec3(0, 0, 0);
+	acceleration = glm::vec3(0, 0, 0);
+	thrustForce = glm::vec3(0, 0, 0);
+	size = glm::vec3(0, 0, 0);
 	modelMatrix = glm::mat4(1.0f);
+	modelIndex = 0;
+	objScale = glm::vec3(1.0f, 1.0f, 1.0f);
+
 	if(a == FILE_VT)
 		readVT(path);
 	else if(a == FILE_VTN)
@@ -28,7 +52,6 @@ Object::Object(std::string& path, int a)
 		readFlat(path);
 	else
 		loadData(path);
-	modelIndex = 0;
 }
 
 
@@ -170,7 +193,6 @@ void Object::readVT(std::string path) {
 
 void Object::readVTN(std::string path)
 {
-
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> texCoords;
 	std::vector<glm::vec3> normals;
@@ -180,6 +202,8 @@ void Object::readVTN(std::string path)
 	std::vector<glm::vec3> tempNormalArray;
 	std::fstream file(path);
 
+	glm::vec3 sizeL = glm::vec3(0, 0, 0);
+	glm::vec3 sizeB = glm::vec3(0, 0, 0);
 
 	while (!file.eof()) {
 		char line[256];
@@ -197,6 +221,20 @@ void Object::readVTN(std::string path)
 		if (line[0] == 'v' && line[1] == ' ') {
 			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
 			vertices.push_back(tempVertex);
+			if (tempVertex.x > sizeB.x)
+				sizeB.x = tempVertex.x;
+			if (tempVertex.y > sizeB.y)
+				sizeB.y = tempVertex.y;
+			if (tempVertex.z > sizeB.z)
+				sizeB.z = tempVertex.z;
+
+
+			if (tempVertex.x < sizeL.x)
+				sizeL.x = tempVertex.x;
+			if (tempVertex.y < sizeL.y)
+				sizeL.y = tempVertex.y;
+			if (tempVertex.z < sizeL.z)
+				sizeL.z = tempVertex.z;
 		}
 
 		if (line[0] == 'v' && line[1] == 't') {
@@ -226,7 +264,11 @@ void Object::readVTN(std::string path)
 			indices.push_back(tempI[1]);
 			indices.push_back(tempI[2]);
 
+
 		}
+
+		
+
 
 
 	}
@@ -260,7 +302,9 @@ void Object::readVTN(std::string path)
 		}
 	}
 
-
+	size.x = (sizeB.x - sizeL.x) * objScale.x;
+	size.y = (sizeB.y - sizeL.y) * objScale.y;
+	size.z = (sizeB.z - sizeL.z) * objScale.z;
 	this->data = tempVertexArray;
 	this->indices = tempIndexArray;
 
@@ -296,6 +340,12 @@ void Object::readVN(std::string path)
 		if (line[0] == 'v' && line[1] == ' ') {
 			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
 			vertices.push_back(tempVertex);
+			if (abs(tempVertex.x) > size.x)
+				size.x = abs(tempVertex.x);
+			if (abs(tempVertex.y) > size.y)
+				size.y = abs(tempVertex.y);
+			if (abs(tempVertex.z) > size.z)
+				size.z = abs(tempVertex.z);
 		}
 
 	
@@ -322,7 +372,7 @@ void Object::readVN(std::string path)
 			indices.push_back(tempI[2]);
 
 		}
-
+	
 
 	}
 	int a = 0;
@@ -366,7 +416,8 @@ void Object::readFlat(std::string path)
 	std::fstream file(path);
 	std::vector<Vertex> tempVertexArray;
 	std::vector<unsigned int> tempIndexArray;
-
+	glm::vec3 sizeL = glm::vec3(0, 0, 0);
+	glm::vec3 sizeB = glm::vec3(0, 0, 0);
 	while (!file.eof()) {
 		char line[256];
 		Vertex tempVertex;
@@ -377,6 +428,24 @@ void Object::readFlat(std::string path)
 			sscanf_s(line, "v %f %f %f %f %f %f %f %f", &tempVertex.pos.x, &tempVertex.pos.y, &tempVertex.pos.z, &tempVertex.texCoord.x
 			, &tempVertex.texCoord.y, &tempVertex.normal.x, &tempVertex.normal.y, &tempVertex.normal.z);
 			tempVertexArray.push_back(tempVertex);
+			
+			if(tempVertex.pos.x > sizeB.x)
+				sizeB.x = tempVertex.pos.x;
+			if(tempVertex.pos.y > sizeB.y)
+				sizeB.y = tempVertex.pos.y;
+			if(tempVertex.pos.z > sizeB.z)
+				sizeB.z = tempVertex.pos.z;
+
+
+			if (tempVertex.pos.x < sizeL.x)
+				sizeL.x = tempVertex.pos.x;
+			if (tempVertex.pos.y < sizeL.y)
+				sizeL.y = tempVertex.pos.y;
+			if (tempVertex.pos.z < sizeL.z)
+				sizeL.z = tempVertex.pos.z;
+
+
+
 		}
 		else if (line[0] == 'i') {
 			unsigned int i;
@@ -387,4 +456,7 @@ void Object::readFlat(std::string path)
 
 	this->data = tempVertexArray;
 	this->indices = tempIndexArray;
+	size.x = (sizeB.x - sizeL.x) * objScale.x;
+	size.y = (sizeB.y - sizeL.y) * objScale.y;
+	size.z = (sizeB.z - sizeL.z) * objScale.z;
 }

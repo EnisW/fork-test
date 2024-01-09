@@ -11,6 +11,7 @@
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <cmath>
 
 static float initialFoV;
 
@@ -172,8 +173,11 @@ static Font font_Arial = { "Arial", 256, 0, 0, 4096, 1024, 95, characters_Arial 
 typedef struct{
 	std::string text;
 	int x, y;
-
-
+	unsigned int indexOffset;
+	unsigned int vertexOffset;
+	unsigned int vertexCount;
+	unsigned int indexCount;
+	unsigned int index;
 }Text;
 
 

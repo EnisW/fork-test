@@ -3,7 +3,10 @@
 
 TextRenderer::TextRenderer()
 {
+	updateFlag = false;
 	scale = 1.0f;
+	vertices = std::vector<Vertex>(0);
+	indices = std::vector<unsigned int>(0);
 	this->programID = LoadShaders("shaderText.vert", "shaderText.frag");
 	glUseProgram(this->programID);
 	screenHeight = HEIGHT;
@@ -80,17 +83,29 @@ TextRenderer::TextRenderer()
 
 	glBindVertexArray(0);
 }
-void TextRenderer::addText(Text& text)
+void TextRenderer::addText(Text* text)
 {
-	texts.push_back(text);
-	float currentXBase = text.x;
-	float currentYBase = text.y;
 
-	int textLength = text.text.length();
+	texts.push_back(text);
+	text->index = texts.size() - 1;
+	text->vertexOffset = vertices.size();
+	text->indexOffset = indices.size();
+
+	std::cout << vertices.size() << std::endl;
+	std::cout << indices.size() << std::endl;
+
+	unsigned int _vertexCount = 0;
+	unsigned int _indexCount = 0;
+
+
+	float currentXBase = text->x;
+	float currentYBase = text->y;
+
+	int textLength = text->text.length();
 	int skip = 0;
 	for (int i = 0; i < textLength; ++i) {
 
-		char currentChar = text.text[i];
+		char currentChar = text->text[i];
 		Character currentCharacter = font_Arial.characters[currentChar - 32];
 		if (currentChar == ' ') {
 			currentXBase += (float)font_Arial.characters[16].width / scale / 2;
@@ -99,7 +114,7 @@ void TextRenderer::addText(Text& text)
 		}
 
 		if (currentChar == '|') {
-			currentXBase = text.x;
+			currentXBase = text->x;
 			currentYBase += (float)currentCharacter.height/ (float)2;
 			skip++;
 			continue;
@@ -119,6 +134,7 @@ void TextRenderer::addText(Text& text)
 		vertices.push_back(vertex2);
 		vertices.push_back(vertex3);
 		vertices.push_back(vertex4);
+		_vertexCount += 4;
 
 		indices.push_back(2 + (i-skip) * 4);
 		indices.push_back(0 + (i - skip) * 4);
@@ -126,20 +142,27 @@ void TextRenderer::addText(Text& text)
 		indices.push_back(2 + (i - skip) * 4);
 		indices.push_back(1 + (i - skip) * 4);
 		indices.push_back(3 + (i - skip) * 4);
+		_indexCount += 6;
 		currentXBase += (float)currentCharacter.width/ scale/2;
 	}
-	glBindVertexArray(VertexArrayID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-	
 
+	text->indexCount = _indexCount;
+	text->vertexCount = _vertexCount;
+
+	updateFlag = true;
 
 }
 
-void TextRenderer::removeText(Text& text)
+void TextRenderer::removeText(Text* text)
 {
+	textRemoveQueue.push_back(text);
+}
+
+void TextRenderer::removeAllText()
+{
+	for (Text* t : texts) {
+		textRemoveQueue.push_back(t);
+	}
 }
 
 void TextRenderer::setBitmapFont(std::string fontName)
@@ -200,6 +223,18 @@ void TextRenderer::setBitmapFont(std::string fontName)
 
 void TextRenderer::render()
 {
+	if (updateFlag) {
+		updateBuffers();
+		updateFlag = false;
+	}
+
+	for(Text* t: textRemoveQueue)
+		removeTextFromQueue(t);
+
+	
+
+	textRemoveQueue.clear();
+
 	glUseProgram(this->programID);
 	glBindVertexArray(VertexArrayID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
@@ -229,4 +264,39 @@ void TextRenderer::setData(std::vector<Vertex>& data, std::vector<unsigned int>&
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
+}
+
+void TextRenderer::updateBuffers()
+{
+	glBindVertexArray(VertexArrayID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
+
+}
+
+void TextRenderer::removeTextFromQueue(Text* text)
+{
+
+
+	this->vertices.erase(this->vertices.begin() + text->vertexOffset, this->vertices.begin() + text->vertexOffset + text->vertexCount);
+
+	this->indices.erase(this->indices.begin() + text->indexOffset, this->indices.begin() + text->indexOffset + text->indexCount);
+	texts.erase(texts.begin() + text->index);
+	
+	glBindVertexArray(VertexArrayID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+
+	if (vertices.size() > 0) {
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
+	}
+	else {
+				glInvalidateBufferData(vertexbuffer);
+				glInvalidateBufferData(elementBuffer);
+	}
+	
+	
 }

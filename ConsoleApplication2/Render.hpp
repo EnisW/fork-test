@@ -3,6 +3,7 @@
 #include "Util.hpp"
 #include "Object.hpp"
 #include "Camera.hpp"
+#include "Physics.hpp"
 
 class Renderer {
 
@@ -15,6 +16,8 @@ public:
 	bool addObject(Object* object);
 	void removeObject(Object* object);
 	void addObjectToQueue(Object* object);
+	void setPhysics(Physics* physics);
+
 
 	virtual void render();
 
@@ -26,7 +29,7 @@ protected:
 	GLuint screenHeight, screenWidth;
 	glm::mat4 lightProjection, lightView;
 
-	
+	Physics* physics;
 	
 	GLuint shadowMapFBO;
 	GLuint shadowMap;

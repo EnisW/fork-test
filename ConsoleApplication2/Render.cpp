@@ -5,12 +5,15 @@
 
 Renderer::Renderer()
 {
+	physics = nullptr;
 }
 
 Renderer::Renderer(GLuint programID)
 {
 	screenHeight = HEIGHT;
 	screenWidth = WIDTH;
+	
+	physics = nullptr;
 
 	textureEnabled = false;
 
@@ -104,7 +107,7 @@ Renderer::~Renderer()
 
 bool Renderer::addObject(Object* object)
 {
-		
+		physics->addObject(object);
 
 
 		if(objects.size() >= MAX_OBJECT)
@@ -196,12 +199,22 @@ void Renderer::addObjectToQueue(Object* object)
 	objectQueue.push_back(object);
 }
 
+void Renderer::setPhysics(Physics* physics)
+{
+		this->physics = physics;
+		for(Object* o: objects)
+			physics->addObject(o);
+}
+
 void Renderer::render()
 {
 
 	for (Object* o : objectQueue) {
 		addObject(o);
 	}
+	for (Object* o : objects)
+		modelMatrices[o->modelIndex] = o->getModelMatrix();
+
 
 	objectQueue.clear();
 

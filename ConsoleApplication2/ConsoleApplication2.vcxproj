@@ -134,6 +134,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConsoleApplication2.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="userInterface.cpp" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Object.hpp" />
+    <ClInclude Include="Physics.hpp" />
     <ClInclude Include="Render.hpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextRenderer.hpp" />

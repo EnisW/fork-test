@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{f91ec0f8-0266-4d60-b50d-2297357b0824}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleApplication2.cpp">
@@ -33,21 +36,48 @@
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Kaynak Dosyalar</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Kaynak Dosyalar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader.vert" />
-    <None Include="shader.frag" />
-    <None Include="shaderLine.frag" />
-    <None Include="shaderLine.vert" />
-    <None Include="shaderColored.vert" />
-    <None Include="shaderColored.frag" />
-    <None Include="shadowMap.vert" />
-    <None Include="shadowMap.frag" />
-    <None Include="shaderGround.vert" />
-    <None Include="shaderGround.frag" />
     <None Include="..\..\..\objectConverter\objectConverter.py" />
-    <None Include="shaderText.vert" />
-    <None Include="shaderText.frag" />
+    <None Include="shadowMap.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shadowMap.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderText.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderLine.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderText.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderLine.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderGround.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderGround.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderColored.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaderColored.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shader.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.hpp">
@@ -69,6 +99,9 @@
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
     <ClInclude Include="TextRenderer.hpp">
+      <Filter>Üst Bilgi Dosyaları</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.hpp">
       <Filter>Üst Bilgi Dosyaları</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,8 @@
 #include "userInterface.hpp"
 #include "TextRenderer.hpp"
 
+#define ENABLE_INPUT false
+
 using namespace glm;
 
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
@@ -49,7 +51,7 @@ int main(void)
 	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Deneme", NULL, NULL);
 	if (window == NULL) {
-		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible..\n");
 		getchar();
 		glfwTerminate();
 		return -1;
@@ -128,22 +130,43 @@ int main(void)
 	std::string path1 = "ground.obj";
 
 	Object squareObject1(path, FILE_FLAT);
-	
+	Object squareObject2(path, FILE_FLAT);
+	Object squareObject3(path, FILE_FLAT);
+	Object squareObject4(path, FILE_FLAT);
+
 
 	Object groundObject(path1);
+	groundObject.physicsEnabled = false;
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
+	squareObject2.move(vec3(45.0f, 23.0f,-20.0f));
+	squareObject3.move(vec3(30.0f, 23.0f, -20.0f));
+	squareObject4.move(vec3(15.0f, 23.0f, -20.0f));
+
 	
 	groundObject.move(vec3(0.0f, -5.0f, 0.0f));
+	std::cout << "ground: " << groundObject.position.x << " " << groundObject.position.y << " " << groundObject.position.z << std::endl;
+	std::cout << "ground size:" << groundObject.size.x << " " << groundObject.size.y << " " << groundObject.size.z << std::endl;
+	std::cout << "square: " << squareObject2.position.x << " " << squareObject2.position.y << " " << squareObject2.position.z << std::endl;
+	std::cout << "square size:" << squareObject2.size.x << " " << squareObject2.size.y << " " << squareObject2.size.z << std::endl;
+
 	squareObject1.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject2.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject3.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject4.setColor(vec3(0.0f, 1.0f, 1.0f));
 
-
+	Physics* physics = new Physics();
 
 	Renderer renderer = Renderer(programID);
+	renderer.setPhysics(physics);
+	renderer.addObject(&squareObject2);
+	renderer.addObject(&squareObject3);
+	renderer.addObject(&squareObject4);
 
 
 	renderer.textureEnabled = false;
 	
 	Renderer rendererGround = Renderer(programIDGround);
+	rendererGround.setPhysics(physics);
 	rendererGround.addObject(&groundObject);
 
 	glEnable(GL_DEPTH_TEST);
@@ -160,12 +183,25 @@ int main(void)
 	renderQueue.push_back(&textRenderer);
 	int command = 0;
 	camera.addTextShader(textRenderer.getProgramID());
-	userInterface ui;
-	std::thread loopThread(&userInterface::loop, &ui, &renderQueue, &camera);
+	
+
+	if (ENABLE_INPUT) {
+		userInterface ui;
+		ui.textRenderer = &textRenderer;
+		std::thread loopThread(&userInterface::loop, &ui, &renderQueue, &camera);
+	}
+	
+
+
+
+
+	physics->applyGravity();
+	std::thread physicsThread(&Physics::updateLoop, physics);
+
+	
 	do {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 
 		glUseProgram(programID2);
@@ -188,8 +224,8 @@ int main(void)
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
-	
-	loopThread.join();
+	physics->terminate();
+	physicsThread.join();
 	return 0;
 }
 

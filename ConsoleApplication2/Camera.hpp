@@ -23,6 +23,8 @@ public:
 	void addProgram(GLuint programID);
 	void addTextShader(GLuint programID);
 
+
+
 private:
 	
 

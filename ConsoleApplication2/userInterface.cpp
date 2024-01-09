@@ -88,6 +88,19 @@ void userInterface::loop(std::vector<Renderer*>* renderQueue, Camera* camera)
 
 		
 		}
+		else if (tokens[0] == "write") {
+			Text text;
+			text.text = tokens[1];
+			text.x = std::stof(tokens[2]);
+			text.y = std::stof(tokens[3]);
+			textRenderer->addText(&text);
+		}
+		else if (tokens[0] == "clear") {
+			textRenderer->removeAllText();
+		}
+		else {
+			std::cout << "unknown command: " << tokens[0] << std::endl;
+		}
 
 
 
