@@ -1,4 +1,8 @@
 #pragma once
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+
 // Include standard headers
 #pragma comment(lib, "Ws2_32.lib")
 #include <stdio.h>

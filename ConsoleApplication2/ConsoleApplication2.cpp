@@ -1,4 +1,10 @@
-﻿#include "Util.hpp"
+﻿#define GLM_ENABLE_EXPERIMENTAL
+#include <chrono>
+#include <thread>
+#include <corecrt_io.h>
+
+
+#include "Util.hpp"
 #include "Camera.hpp"
 #include "Object.hpp"
 #include "Render.hpp"
@@ -17,6 +23,11 @@ GLFWwindow* window;
 static const GLfloat g_vertex_buffer_data2[] = {
    -10.0f, 0.0f,0.0f, 1.0f, 1.0f, 1.0f,
    0.0f, 0.0f, 0.0f,1.0f,1.0f,1.0f,
+   -9.0f, 1.0f,0.0f, 1.0f, 1.0f, 1.0f,
+   1.0f, 1.0f, 0.0f,1.0f,1.0f,1.0f,
+   -8.0f, 2.0f,0.0f, 1.0f, 1.0f, 1.0f,
+   2.0f, 2.0f, 0.0f,1.0f,1.0f,1.0f,
+   
    10.0f, 0.0f, 0.0f,1.0f, 0.0f, 0.0f,
    0.0f, 0.0f, 0.0f,1.0f,0.0f,0.0f,
    0.0f, 0.0f, 0.0f,0.0f, 1.0f, 0.0f,
@@ -26,10 +37,133 @@ static const GLfloat g_vertex_buffer_data2[] = {
 };
 
 
+int generateLines(std::vector<float>& buffer, float max_x, float max_y, float max_z, float min_x, float min_y, float min_z, float resolution);
 
 
 
+void remoteHandler() {
+	while (true) {
+		WSADATA wsaData;
+		int iResult;
 
+		SOCKET ListenSocket = INVALID_SOCKET;
+		SOCKET ClientSocket = INVALID_SOCKET;
+
+		struct addrinfo* result = NULL;
+		struct addrinfo hints;
+
+		int iSendResult;
+		char recvbuf[512];
+		int recvbuflen = 512;
+
+		// Initialize Winsock
+		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (iResult != 0) {
+			std::cout << "WSAStartup failed with error: " << iResult << std::endl;
+			return;
+		}
+
+		ZeroMemory(&hints, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+		hints.ai_flags = AI_PASSIVE;
+
+		// Resolve the server address and port
+		iResult = getaddrinfo(NULL, "27015", &hints, &result);
+		if (iResult != 0) {
+			std::cout << "getaddrinfo failed with error: " << iResult << std::endl;
+			WSACleanup();
+			return;
+		}
+
+		// Create a SOCKET for the server to listen for client connections
+		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+		if (ListenSocket == INVALID_SOCKET) {
+			std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
+			freeaddrinfo(result);
+			WSACleanup();
+			return;
+		}
+
+		// Setup the TCP listening socket
+		iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+		if (iResult == SOCKET_ERROR) {
+			std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
+			freeaddrinfo(result);
+			closesocket(ListenSocket);
+			WSACleanup();
+			return;
+		}
+
+		freeaddrinfo(result);
+
+		iResult = listen(ListenSocket, SOMAXCONN);
+		if (iResult == SOCKET_ERROR) {
+			std::cout << "listen failed with error: " << WSAGetLastError() << std::endl;
+			closesocket(ListenSocket);
+			WSACleanup();
+			return;
+		}
+
+		// Accept a client socket
+		ClientSocket = accept(ListenSocket, NULL, NULL);
+		if (ClientSocket == INVALID_SOCKET) {
+			std::cout << "accept failed with error: " << WSAGetLastError() << std::endl;
+			closesocket(ListenSocket);
+			WSACleanup();
+			return;
+		}
+
+		// Receive data until the client shuts down the connection
+		do {
+			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			if (iResult > 0) {
+				std::cout << "Bytes received: " << iResult << std::endl;
+				std::cout << "Bytes are: " << recvbuf << std::endl;
+
+				// Echo the buffer back to the sender
+				iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+				if (iSendResult == SOCKET_ERROR) {
+					std::cout << "send failed with error: " << WSAGetLastError() << std::endl;
+					closesocket(ClientSocket);
+					WSACleanup();
+					return;
+				}
+				std::cout << "Bytes sent: " << iSendResult << std::endl;
+			}
+			else if (iResult == 0)
+				std::cout << "Connection closing..." << std::endl;
+			else {
+				std::cout << "recv failed with error: " << WSAGetLastError() << std::endl;
+				closesocket(ClientSocket);
+				WSACleanup();
+				return;
+			}
+
+		} while (iResult > 0);
+
+		// shutdown the connection since we're done
+		iResult = shutdown(ClientSocket, SD_SEND);
+		if (iResult == SOCKET_ERROR) {
+			std::cout << "shutdown failed with error: " << WSAGetLastError() << std::endl;
+			closesocket(ClientSocket);
+			WSACleanup();
+			return;
+		}
+
+		// cleanup
+		closesocket(ClientSocket);
+		WSACleanup();
+
+		return;
+
+
+	}
+}
+
+
+static std::vector<std::string> commands;
 
 
 int main(void)
@@ -74,6 +208,10 @@ int main(void)
 
 	
 
+	std::vector<float> lineBuffer;
+	int size = generateLines(lineBuffer, 10.0f, 10.0f, 10.0f, -10.0f, -10.0f, -10.0f, 2.0f);
+
+
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -84,7 +222,7 @@ int main(void)
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data2), g_vertex_buffer_data2, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*lineBuffer.size(), lineBuffer.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -129,18 +267,23 @@ int main(void)
 	std::string path = "out.obj";
 	std::string path1 = "ground.obj";
 
-	Object squareObject1(path, FILE_FLAT);
-	Object squareObject2(path, FILE_FLAT);
-	Object squareObject3(path, FILE_FLAT);
-	Object squareObject4(path, FILE_FLAT);
+	Object squareObject1(path, FILE_VTN);
+	Object squareObject2(path, FILE_VTN);
+	Object squareObject3(path, FILE_VTN);
+	Object squareObject4(path, FILE_VTN);
 
 
 	Object groundObject(path1);
 	groundObject.physicsEnabled = false;
+	squareObject1.physicsEnabled = false;
+	squareObject2.physicsEnabled = false;
+	squareObject3.physicsEnabled = false;
+	squareObject4.physicsEnabled = false;
+
 	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-	squareObject2.move(vec3(45.0f, 23.0f,-20.0f));
-	squareObject3.move(vec3(30.0f, 23.0f, -20.0f));
-	squareObject4.move(vec3(15.0f, 23.0f, -20.0f));
+	squareObject2.move(vec3(4.0f, 2.0f,-2.0f));
+	squareObject3.move(vec3(3.0f, 2.0f, -2.0f));
+	squareObject4.move(vec3(1.0f, 2.0f, -2.0f));
 
 	
 	groundObject.move(vec3(0.0f, -5.0f, 0.0f));
@@ -199,6 +342,8 @@ int main(void)
 	std::thread physicsThread(&Physics::updateLoop, physics);
 
 	
+	std::thread handler(remoteHandler);
+
 	do {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -209,7 +354,7 @@ int main(void)
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glBindVertexArray(VertexArrayID);
 
-		glDrawArrays(GL_LINES, 0, 8);
+		glDrawArrays(GL_LINES, 0, size);
 		for(Renderer* r: renderQueue)
 			r->render();
 		camera.update();
@@ -317,4 +462,87 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 
 	return ProgramID;
 }
+
+int generateLines(std::vector<float>& buffer, float max_x, float max_y, float max_z, float min_x, float min_y, float min_z, float resolution) {
+	
+
+	float y_count = max_y / resolution;
+	float x_count = max_x / resolution;
+	float z_count = max_z / resolution;
+
+
+	buffer.reserve((int(y_count) + int(y_count)) * 6 * 2);
+
+
+	for (float i = min_x; i <= max_x; i += resolution) {
+		for (float j = min_z; j <= max_z; j += resolution) {
+			
+			buffer.push_back(i);
+			buffer.push_back(min_y);
+			buffer.push_back(j);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+			buffer.push_back(i);
+			buffer.push_back(max_y);
+			buffer.push_back(j);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+		}
+	
+	}
+
+	for (float i = min_y; i <= max_y; i += resolution) {
+		for (float j = min_x; j <= max_x; j += resolution) {
+
+			buffer.push_back(j);
+			buffer.push_back(i);
+			buffer.push_back(min_z);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+			buffer.push_back(j);
+			buffer.push_back(i);
+			buffer.push_back(max_z);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+		}
+
+	}
+
+	for (float i = min_y; i <= max_y; i += resolution) {
+		for (float j = min_z; j <= max_z; j += resolution) {
+
+			buffer.push_back(min_x);
+			buffer.push_back(i);
+			buffer.push_back(j);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+			buffer.push_back(max_x);
+			buffer.push_back(i);
+			buffer.push_back(j);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
+
+		}
+
+	}
+
+
+
+
+	return buffer.size();
+
+}
+
+
 

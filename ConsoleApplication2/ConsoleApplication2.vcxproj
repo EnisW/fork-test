@@ -104,12 +104,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glm-master;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glew-2.1.0\include;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glm-master;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glew-2.1.0\include;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glew-2.1.0\lib\Release\x64;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glew-2.1.0\lib\Release\x64;C:\Users\talha\OneDrive\Belgeler\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
