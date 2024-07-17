@@ -1,5 +1,7 @@
 #include "Object.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 Object::Object(std::vector<Vertex> data)
 {
@@ -32,6 +34,8 @@ Object::Object(std::string& path)
 }
 Object::Object(std::string& path, int a)
 {
+
+	name = "";
 	physicsEnabled = true;
 	position = glm::vec3(0, 0, 0);
 	velocity = glm::vec3(0, 0, 0);
@@ -135,18 +139,18 @@ void Object::readVT(std::string path) {
 		unsigned int t1, t2, t3;
 
 		if (line[0] == 'v' && line[1] == ' ') {
-			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
+			sscanf(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
 			vertices.push_back(tempVertex);
 		}
 
 		if (line[0] == 'v' && line[1] == 't') {
-			sscanf_s(line, "vt %f %f", &tempUV.x, &tempUV.y);
+			sscanf(line, "vt %f %f", &tempUV.x, &tempUV.y);
 			texCoords.push_back(tempUV);
 		}
 
 
 		if (line[0] == 'f' && line[1] == ' ') {
-			sscanf_s(line, "f %u/%u %u/%u %u/%u", &i1, &t1, &i2, &t2, &i3, &t3);
+			sscanf(line, "f %u/%u %u/%u %u/%u", &i1, &t1, &i2, &t2, &i3, &t3);
 			tempI[0].vertex = i1 - 1;
 			tempI[1].vertex = i2 - 1;
 			tempI[2].vertex = i3 - 1;
@@ -219,7 +223,7 @@ void Object::readVTN(std::string path)
 		unsigned int n1, n2, n3;
 
 		if (line[0] == 'v' && line[1] == ' ') {
-			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
+			sscanf(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
 			vertices.push_back(tempVertex);
 			if (tempVertex.x > sizeB.x)
 				sizeB.x = tempVertex.x;
@@ -238,18 +242,18 @@ void Object::readVTN(std::string path)
 		}
 
 		if (line[0] == 'v' && line[1] == 't') {
-			sscanf_s(line, "vt %f %f", &tempUV.x, &tempUV.y);
+			sscanf(line, "vt %f %f", &tempUV.x, &tempUV.y);
 			texCoords.push_back(tempUV);
 		}
 
 		if (line[0] == 'v' && line[1] == 'n') {
-			sscanf_s(line, "vn %f %f %f", &tempNormal.x, &tempNormal.y, &tempNormal.z);
+			sscanf(line, "vn %f %f %f", &tempNormal.x, &tempNormal.y, &tempNormal.z);
 			normals.push_back(tempNormal);
 		}
 
 
 		if (line[0] == 'f' && line[1] == ' ') {
-			sscanf_s(line, "f %u/%u/%u %u/%u/%u %u/%u/%u", &i1, &t1, &n1, &i2, &t2, &n2, &i3, &t3, &n3);
+			sscanf(line, "f %u/%u/%u %u/%u/%u %u/%u/%u", &i1, &t1, &n1, &i2, &t2, &n2, &i3, &t3, &n3);
 			tempI[0].vertex = i1 - 1;
 			tempI[1].vertex = i2 - 1;
 			tempI[2].vertex = i3 - 1;
@@ -338,7 +342,7 @@ void Object::readVN(std::string path)
 		unsigned int n1, n2, n3;
 
 		if (line[0] == 'v' && line[1] == ' ') {
-			sscanf_s(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
+			sscanf(line, "v %f %f %f", &tempVertex.x, &tempVertex.y, &tempVertex.z);
 			vertices.push_back(tempVertex);
 			if (abs(tempVertex.x) > size.x)
 				size.x = abs(tempVertex.x);
@@ -350,13 +354,13 @@ void Object::readVN(std::string path)
 
 	
 		if (line[0] == 'v' && line[1] == 'n') {
-			sscanf_s(line, "vn %f %f %f", &tempNormal.x, &tempNormal.y, &tempNormal.z);
+			sscanf(line, "vn %f %f %f", &tempNormal.x, &tempNormal.y, &tempNormal.z);
 			normals.push_back(tempNormal);
 		}
 
 
 		if (line[0] == 'f' && line[1] == ' ') {
-			sscanf_s(line, "f %u//%u %u//%u %u//%u", &i1, &n1, &i2,  &n2, &i3,  &n3);
+			sscanf(line, "f %u//%u %u//%u %u//%u", &i1, &n1, &i2, &n2, &i3, &n3);
 			tempI[0].vertex = i1 - 1;
 			tempI[1].vertex = i2 - 1;
 			tempI[2].vertex = i3 - 1;
@@ -425,8 +429,7 @@ void Object::readFlat(std::string path)
 		file.getline(line, 256);
 
 		if (line[0] == 'v') {
-			sscanf_s(line, "v %f %f %f %f %f %f %f %f", &tempVertex.pos.x, &tempVertex.pos.y, &tempVertex.pos.z, &tempVertex.texCoord.x
-			, &tempVertex.texCoord.y, &tempVertex.normal.x, &tempVertex.normal.y, &tempVertex.normal.z);
+			sscanf(line, "v %f %f %f %f %f %f %f %f", &tempVertex.pos.x, &tempVertex.pos.y, &tempVertex.pos.z, &tempVertex.texCoord.x, &tempVertex.texCoord.y, &tempVertex.normal.x, &tempVertex.normal.y, &tempVertex.normal.z);
 			tempVertexArray.push_back(tempVertex);
 			
 			if(tempVertex.pos.x > sizeB.x)
@@ -449,7 +452,7 @@ void Object::readFlat(std::string path)
 		}
 		else if (line[0] == 'i') {
 			unsigned int i;
-			sscanf_s(line, "i %u", &i);
+			sscanf(line, "i %u", &i);
 			tempIndexArray.push_back(i);
 		}
 	}

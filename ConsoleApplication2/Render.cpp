@@ -139,6 +139,7 @@ bool Renderer::addObject(Object* object)
 		}
 		std::vector<unsigned int> indicies_t = object->getIndices();
 		object->elementBufferBias = bias;
+		object->elementBufferOffset = indices.size();
 		for (int i = 0; i < indicies_t.size(); i++) {
 			this->indices.push_back(indicies_t[i] + bias);
 		}
@@ -192,6 +193,37 @@ void Renderer::removeObject(Object* object)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	*/
+
+
+	for(int i = 0; i < objects.size(); i++){
+		if(objects[i]->name == object->name){
+			objects.erase(objects.begin() + i);
+			break;
+		}
+	}
+
+
+	vertices.erase(vertices.begin() + object->elementBufferBias, vertices.begin() + object->elementBufferBias + object->data.size());
+
+	indices.erase(indices.begin() + object->elementBufferOffset, indices.begin() + object->elementBufferOffset + object->indices.size());
+
+	for(int i = object->elementBufferOffset; i < indices.size(); i++){
+		indices[i] -= object->data.size();
+	}
+
+	modelMatrixUsed[object->modelIndex] = false;
+
+	glBindVertexArray(VertexArrayID);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 }
 
 void Renderer::addObjectToQueue(Object* object)

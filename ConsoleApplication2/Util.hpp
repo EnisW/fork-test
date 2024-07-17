@@ -4,7 +4,6 @@
 
 
 // Include standard headers
-#pragma comment(lib, "Ws2_32.lib")
 #include <stdio.h>
 #include <string>
 #include <stdlib.h>
@@ -13,8 +12,6 @@
 #include <vector>
 #include <thread>
 #include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <cmath>
 
 static float initialFoV;
@@ -33,8 +30,6 @@ static float initialFoV;
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #define MAX_OBJECT 32
 
@@ -56,8 +51,8 @@ struct _Vertex{
 } ;
 typedef struct _Vertex Vertex;
 
-#define WIDTH 1680
-#define HEIGHT 960
+#define WIDTH 1366
+#define HEIGHT 768
 
 
 typedef struct Character {

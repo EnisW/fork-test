@@ -1,8 +1,10 @@
 ﻿#define GLM_ENABLE_EXPERIMENTAL
 #include <chrono>
 #include <thread>
-#include <corecrt_io.h>
 
+#include <unistd.h>
+#include <netinet/in.h> 
+#include <sys/socket.h> 
 
 #include "Util.hpp"
 #include "Camera.hpp"
@@ -10,14 +12,20 @@
 #include "Render.hpp"
 #include "userInterface.hpp"
 #include "TextRenderer.hpp"
-
+#include <string.h>
+#include <algorithm> 
 #define ENABLE_INPUT false
 
 using namespace glm;
 
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 
+void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>&);
+
 GLFWwindow* window;
+
+
+bool showLine = false;
 
 
 static const GLfloat g_vertex_buffer_data2[] = {
@@ -38,132 +46,55 @@ static const GLfloat g_vertex_buffer_data2[] = {
 
 
 int generateLines(std::vector<float>& buffer, float max_x, float max_y, float max_z, float min_x, float min_y, float min_z, float resolution);
+static std::vector<std::string> commands;
 
 
 
 void remoteHandler() {
-	while (true) {
-		WSADATA wsaData;
-		int iResult;
+	while(true){
 
-		SOCKET ListenSocket = INVALID_SOCKET;
-		SOCKET ClientSocket = INVALID_SOCKET;
+		
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0); 
+  
+    // specifying the address 
+    sockaddr_in serverAddress; 
+    serverAddress.sin_family = AF_INET; 
+    serverAddress.sin_port = htons(8080); 
+    serverAddress.sin_addr.s_addr = INADDR_ANY; 
+  
+    // binding socket. 
+    bind(serverSocket, (struct sockaddr*)&serverAddress, 
+         sizeof(serverAddress)); 
+  
+    // listening to the assigned socket 
+    listen(serverSocket, 5); 
+  
+    // accepting connection request 
+    int clientSocket 
+        = accept(serverSocket, nullptr, nullptr); 
+  
+    // recieving data 
+    char buffer[1024] = { 0 }; 
+    while(recv(clientSocket, buffer, sizeof(buffer), 0)){
 
-		struct addrinfo* result = NULL;
-		struct addrinfo hints;
+			std::cout << "Message from client: " << buffer << std::endl; 
+			
+			commands.push_back(buffer);
+			
+			memset(buffer, 0, sizeof(buffer));
 
-		int iSendResult;
-		char recvbuf[512];
-		int recvbuflen = 512;
+	}
+    
 
-		// Initialize Winsock
-		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (iResult != 0) {
-			std::cout << "WSAStartup failed with error: " << iResult << std::endl;
-			return;
-		}
 
-		ZeroMemory(&hints, sizeof(hints));
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-		hints.ai_flags = AI_PASSIVE;
-
-		// Resolve the server address and port
-		iResult = getaddrinfo(NULL, "27015", &hints, &result);
-		if (iResult != 0) {
-			std::cout << "getaddrinfo failed with error: " << iResult << std::endl;
-			WSACleanup();
-			return;
-		}
-
-		// Create a SOCKET for the server to listen for client connections
-		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		if (ListenSocket == INVALID_SOCKET) {
-			std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
-			freeaddrinfo(result);
-			WSACleanup();
-			return;
-		}
-
-		// Setup the TCP listening socket
-		iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-		if (iResult == SOCKET_ERROR) {
-			std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
-			freeaddrinfo(result);
-			closesocket(ListenSocket);
-			WSACleanup();
-			return;
-		}
-
-		freeaddrinfo(result);
-
-		iResult = listen(ListenSocket, SOMAXCONN);
-		if (iResult == SOCKET_ERROR) {
-			std::cout << "listen failed with error: " << WSAGetLastError() << std::endl;
-			closesocket(ListenSocket);
-			WSACleanup();
-			return;
-		}
-
-		// Accept a client socket
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if (ClientSocket == INVALID_SOCKET) {
-			std::cout << "accept failed with error: " << WSAGetLastError() << std::endl;
-			closesocket(ListenSocket);
-			WSACleanup();
-			return;
-		}
-
-		// Receive data until the client shuts down the connection
-		do {
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult > 0) {
-				std::cout << "Bytes received: " << iResult << std::endl;
-				std::cout << "Bytes are: " << recvbuf << std::endl;
-
-				// Echo the buffer back to the sender
-				iSendResult = send(ClientSocket, recvbuf, iResult, 0);
-				if (iSendResult == SOCKET_ERROR) {
-					std::cout << "send failed with error: " << WSAGetLastError() << std::endl;
-					closesocket(ClientSocket);
-					WSACleanup();
-					return;
-				}
-				std::cout << "Bytes sent: " << iSendResult << std::endl;
-			}
-			else if (iResult == 0)
-				std::cout << "Connection closing..." << std::endl;
-			else {
-				std::cout << "recv failed with error: " << WSAGetLastError() << std::endl;
-				closesocket(ClientSocket);
-				WSACleanup();
-				return;
-			}
-
-		} while (iResult > 0);
-
-		// shutdown the connection since we're done
-		iResult = shutdown(ClientSocket, SD_SEND);
-		if (iResult == SOCKET_ERROR) {
-			std::cout << "shutdown failed with error: " << WSAGetLastError() << std::endl;
-			closesocket(ClientSocket);
-			WSACleanup();
-			return;
-		}
-
-		// cleanup
-		closesocket(ClientSocket);
-		WSACleanup();
-
-		return;
-
+  
+    // closing the socket. 
+    close(serverSocket); 
 
 	}
 }
 
 
-static std::vector<std::string> commands;
 
 
 int main(void)
@@ -174,6 +105,8 @@ int main(void)
 		fprintf(stderr, "Failed to initialize GLFW\n");
 		getchar();
 		return -1;
+	
+	
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -212,6 +145,9 @@ int main(void)
 	int size = generateLines(lineBuffer, 10.0f, 10.0f, 10.0f, -10.0f, -10.0f, -10.0f, 2.0f);
 
 
+
+	std::vector<Object*> objArr;
+	objArr.reserve(50);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -268,6 +204,7 @@ int main(void)
 	std::string path1 = "ground.obj";
 
 	Object squareObject1(path, FILE_VTN);
+	
 	Object squareObject2(path, FILE_VTN);
 	Object squareObject3(path, FILE_VTN);
 	Object squareObject4(path, FILE_VTN);
@@ -302,6 +239,7 @@ int main(void)
 	Renderer renderer = Renderer(programID);
 	renderer.setPhysics(physics);
 	renderer.addObject(&squareObject2);
+	squareObject2.scale(glm::vec3(0.5f, 0.5f, 0.5f));
 	renderer.addObject(&squareObject3);
 	renderer.addObject(&squareObject4);
 
@@ -349,16 +287,20 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		glUseProgram(programID2);
+		processCommands(renderer, camera, objArr);
+		if(showLine){
+			glUseProgram(programID2);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBindVertexArray(VertexArrayID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			glBindVertexArray(VertexArrayID);
 
-		glDrawArrays(GL_LINES, 0, size);
+			glDrawArrays(GL_LINES, 0, size);
+		}
 		for(Renderer* r: renderQueue)
 			r->render();
-		camera.update();
 
+		camera.update();
+		
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -545,4 +487,66 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 }
 
 
+void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>& objArr){
+
+		if(commands.size() < 1)
+		return;
+
+
+		std::vector<std::string> arr;
+		std::stringstream ss(commands[0]);
+		std::string word;
+		while (ss >> word) {
+			arr.push_back(word);
+		}
+		std::cout << objArr.size() << std::endl;
+
+		if(arr[0] == "showline"){
+			showLine = true;
+		}
+
+		if(arr[0] == "hideline"){
+			showLine = false;
+		}
+
+		std::string path = "out.obj";
+
+		if(arr[0] == "add"){
+			Object* obj = new Object(path, FILE_VTN);
+			obj->name = arr[1];
+			std::cout << "scale: " << std::stof(arr[2]) << std::endl;
+			std::cout << "position: " << std::stof(arr[3]) << std::stof(arr[4]) << std::stof(arr[5]) << std::endl;
+			std::cout << "color: " << std::stof(arr[6]) << std::stof(arr[7]) << std::stof(arr[8]) << std::endl;
+			obj->scale(glm::vec3(std::stof(arr[2]), std::stof(arr[2]), std::stof(arr[2])));
+			obj->move(glm::vec3(std::stof(arr[3]), std::stof(arr[4]), std::stof(arr[5])));
+			obj->setColor(glm::vec3(std::stof(arr[6]), std::stof(arr[7]), std::stof(arr[8])));
+			obj->physicsEnabled = false;
+			objArr.push_back(obj);
+			renderer.addObject(obj);
+		}
+
+		if(arr[0] == "delete"){
+			for(int i = 0; i < objArr.size(); i++){
+				std::cout << "-- " << objArr[i]->name << std::endl;
+				if(objArr[i]->name == arr[1]){
+					std::cout << "found object, deleting..." << objArr[i]->name << std::endl;
+
+					renderer.removeObject(objArr[i]);
+					Object* temp = objArr[i];
+					objArr.erase(objArr.begin() + i);
+					free(temp);
+				}
+			}
+		}
+		
+
+
+
+
+
+
+	commands.clear();
+
+
+}
 

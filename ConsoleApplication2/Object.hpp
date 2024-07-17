@@ -58,6 +58,7 @@ public:
 	std::vector<Vertex> data;
 	std::vector<unsigned int> indices;
 	unsigned int elementBufferBias;
+	unsigned int elementBufferOffset;
 	
 	glm::vec3 objScale;
 
@@ -70,6 +71,8 @@ public:
 	glm::vec3 thrustForce;
 	glm::vec3 position;
 	glm::vec3 size;
+
+	std::string name;
 
 	float mass;
 	

@@ -167,6 +167,7 @@ void TextRenderer::removeAllText()
 
 void TextRenderer::setBitmapFont(std::string fontName)
 {
+	/*
 	glUseProgram(this->programID);
 	charUVs.resize(95);
 	int nrChannels;
@@ -217,7 +218,7 @@ void TextRenderer::setBitmapFont(std::string fontName)
 		charUVs[i].topRightX = u2;
 		charUVs[i].topRightY = v2;
 	}
-
+	*/
 
 }
 
