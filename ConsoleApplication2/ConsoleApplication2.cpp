@@ -1,11 +1,11 @@
 ﻿#define GLM_ENABLE_EXPERIMENTAL
 #include <chrono>
 #include <thread>
-
+/*
 #include <unistd.h>
 #include <netinet/in.h> 
 #include <sys/socket.h> 
-
+*/
 #include "Util.hpp"
 #include "Camera.hpp"
 #include "Object.hpp"
@@ -14,13 +14,19 @@
 #include "TextRenderer.hpp"
 #include <string.h>
 #include <algorithm> 
+
+
+#include <winsock2.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+
 #define ENABLE_INPUT false
 
 using namespace glm;
 
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 
-void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>&);
+void processCommands(std::vector<Renderer*>&, Camera& camera, std::vector<Object*>&, std::vector<float>&);
 
 GLFWwindow* window;
 
@@ -51,6 +57,7 @@ static std::vector<std::string> commands;
 
 
 void remoteHandler() {
+	/*
 	while(true){
 
 		
@@ -91,8 +98,68 @@ void remoteHandler() {
     // closing the socket. 
     close(serverSocket); 
 
+	}*/
+
+	WSADATA wsaData;
+	SOCKET ListenSocket = INVALID_SOCKET;
+	SOCKET ClientSocket = INVALID_SOCKET;
+	sockaddr_in serverAddr;
+	char recvbuf[512];
+	int recvbuflen = 512;
+
+	// Initialize Winsock
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	// Create a socket
+	ListenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	// Setup the server address structure
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
+	serverAddr.sin_port = htons(27015);
+
+	// Bind the socket
+	bind(ListenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+
+	// Listen for incoming connections
+	listen(ListenSocket, SOMAXCONN);
+
+	// Accept a client socket
+	ClientSocket = accept(ListenSocket, NULL, NULL);
+
+	// Receive data from the client in a loop
+	while (true) {
+		int iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+		if (iResult > 0) {
+			recvbuf[iResult] = '\0';  // Null-terminate the received data
+			std::cout << "Received: " << recvbuf << std::endl;
+
+			commands.push_back(recvbuf);
+
+			// Exit condition
+			if (strcmp(recvbuf, "exit") == 0) {
+				break;
+			}
+		}
+		else if (iResult == 0) {
+			std::cout << "Connection closing..." << std::endl;
+			break;
+		}
+		else {
+			std::cerr << "recv failed with error: " << WSAGetLastError() << std::endl;
+			break;
+		}
 	}
+
+	// Cleanup
+	closesocket(ClientSocket);
+	closesocket(ListenSocket);
+	WSACleanup();
+
+
 }
+GLuint VertexArrayID;
+GLuint vertexbuffer;
 
 
 
@@ -149,12 +216,10 @@ int main(void)
 	std::vector<Object*> objArr;
 	objArr.reserve(50);
 
-	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 
-	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 
@@ -277,7 +342,7 @@ int main(void)
 
 
 	physics->applyGravity();
-	std::thread physicsThread(&Physics::updateLoop, physics);
+	//std::thread physicsThread(&Physics::updateLoop, physics);
 
 	
 	std::thread handler(remoteHandler);
@@ -287,7 +352,7 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		processCommands(renderer, camera, objArr);
+		processCommands(renderQueue, camera, objArr, lineBuffer);
 		if(showLine){
 			glUseProgram(programID2);
 
@@ -312,7 +377,7 @@ int main(void)
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 	physics->terminate();
-	physicsThread.join();
+	//physicsThread.join();
 	return 0;
 }
 
@@ -412,6 +477,7 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 	float x_count = max_x / resolution;
 	float z_count = max_z / resolution;
 
+	buffer.clear();
 
 	buffer.reserve((int(y_count) + int(y_count)) * 6 * 2);
 
@@ -479,7 +545,13 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 
 	}
 
+	glBindVertexArray(VertexArrayID);
 
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
+
+	
 
 
 	return buffer.size();
@@ -487,7 +559,7 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 }
 
 
-void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>& objArr){
+void processCommands(std::vector<Renderer*>& renderQueue, Camera& camera, std::vector<Object*>& objArr, std::vector<float>& lineBuffer){
 
 		if(commands.size() < 1)
 		return;
@@ -522,7 +594,21 @@ void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>& o
 			obj->setColor(glm::vec3(std::stof(arr[6]), std::stof(arr[7]), std::stof(arr[8])));
 			obj->physicsEnabled = false;
 			objArr.push_back(obj);
-			renderer.addObject(obj);
+			bool added = false;
+
+			for (Renderer* render : renderQueue) {
+				if (render->getObjectCount() < 32) {
+					render->addObject(obj);
+					added = true;
+					break;
+				}
+			}
+
+			if (!added) {
+				renderQueue.push_back(new Renderer());
+				renderQueue[renderQueue.size() - 1]->addObject(obj);
+			}
+
 		}
 
 		if(arr[0] == "delete"){
@@ -531,12 +617,21 @@ void processCommands(Renderer& renderer, Camera& camera, std::vector<Object*>& o
 				if(objArr[i]->name == arr[1]){
 					std::cout << "found object, deleting..." << objArr[i]->name << std::endl;
 
-					renderer.removeObject(objArr[i]);
+					for (Renderer* render : renderQueue)
+						render->removeObject(objArr[i]);
+
 					Object* temp = objArr[i];
 					objArr.erase(objArr.begin() + i);
 					free(temp);
 				}
 			}
+		}
+
+		if (arr[0] == "generatelines") {
+			std::cout << "generating line " << std::endl;
+			generateLines(lineBuffer, std::stof(arr[1]), std::stof(arr[2]), std::stof(arr[3]), std::stof(arr[4]), std::stof(arr[5]), std::stof(arr[6]), std::stof(arr[7]));
+			
+			showLine = true;
 		}
 		
 

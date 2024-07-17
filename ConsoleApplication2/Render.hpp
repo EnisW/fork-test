@@ -17,6 +17,7 @@ public:
 	void removeObject(Object* object);
 	void addObjectToQueue(Object* object);
 	void setPhysics(Physics* physics);
+	unsigned int getObjectCount() { return objects.size(); };
 
 
 	virtual void render();

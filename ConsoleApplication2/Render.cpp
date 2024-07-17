@@ -193,19 +193,34 @@ void Renderer::removeObject(Object* object)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	*/
-
+	bool found = false;
 
 	for(int i = 0; i < objects.size(); i++){
 		if(objects[i]->name == object->name){
 			objects.erase(objects.begin() + i);
+			found = true;
 			break;
 		}
 	}
-
+	if (!found)
+		return;
 
 	vertices.erase(vertices.begin() + object->elementBufferBias, vertices.begin() + object->elementBufferBias + object->data.size());
 
 	indices.erase(indices.begin() + object->elementBufferOffset, indices.begin() + object->elementBufferOffset + object->indices.size());
+
+	for (int i = 0; i < objects.size(); i++) {
+
+		if (object->elementBufferBias < objects[i]->elementBufferBias) {
+			objects[i]->elementBufferBias -= object->data.size();
+		}
+
+		if (object->elementBufferOffset < objects[i]->elementBufferOffset) {
+			objects[i]->elementBufferOffset -= object->indices.size();
+		}
+
+	}
+
 
 	for(int i = object->elementBufferOffset; i < indices.size(); i++){
 		indices[i] -= object->data.size();
@@ -215,7 +230,7 @@ void Renderer::removeObject(Object* object)
 
 	glBindVertexArray(VertexArrayID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
