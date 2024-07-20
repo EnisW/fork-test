@@ -36,11 +36,11 @@ void main()
     vec3 gridColor;
     if(mod(fragPosRaw.x, 2.0) < 1.0 && mod(fragPosRaw.z, 2.0) < 1.0)
 	{
-		gridColor = vec3(0.0, 0.0, 0.0);
+		gridColor = vec3(0.3, 0.3, 0.3);
 	}
 	else if(mod(fragPosRaw.x, 2.0) > 1.0 && mod(fragPosRaw.z, 2.0) > 1.0)
 	{
-		gridColor = vec3(0.0, 0.0, 0.0);
+		gridColor = vec3(0.3, 0.3, 0.3);
 	}
 	else
 	{

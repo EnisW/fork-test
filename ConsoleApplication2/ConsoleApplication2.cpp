@@ -15,7 +15,7 @@
 #include <string.h>
 #include <algorithm> 
 
-
+#include <map>
 #include <winsock2.h>
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -26,13 +26,15 @@ using namespace glm;
 
 GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 
-void processCommands(std::vector<Renderer*>&, Camera& camera, std::vector<Object*>&, std::vector<float>&);
+void processCommands(Renderer*, std::vector<Renderer*>&, Camera& camera, std::vector<Object*>&, std::vector<float>&, std::vector<float>&);
 
 GLFWwindow* window;
 
 
 bool showLine = false;
+bool showGrid = false;
 
+std::map<std::string, int> lineMap;
 
 static const GLfloat g_vertex_buffer_data2[] = {
    -10.0f, 0.0f,0.0f, 1.0f, 1.0f, 1.0f,
@@ -49,7 +51,6 @@ static const GLfloat g_vertex_buffer_data2[] = {
    0.0f, 0.0f, 0.0f,1.0f, 1.0f, 0.0f,
    0.0f, -10.0f, 0.0f,1.0f,1.0f,0.0f
 };
-
 
 int generateLines(std::vector<float>& buffer, float max_x, float max_y, float max_z, float min_x, float min_y, float min_z, float resolution);
 static std::vector<std::string> commands;
@@ -159,9 +160,15 @@ void remoteHandler() {
 
 }
 GLuint VertexArrayID;
-GLuint vertexbuffer;
+GLuint VertexArrayID2;
 
+GLuint vertexBuffer;
+GLuint vertexBufferDynamicLine;
 
+GLuint pid;
+
+Physics* physics;
+Physics* physics2;
 
 
 int main(void)
@@ -209,42 +216,211 @@ int main(void)
 	
 
 	std::vector<float> lineBuffer;
-	int size = generateLines(lineBuffer, 10.0f, 10.0f, 10.0f, -10.0f, -10.0f, -10.0f, 2.0f);
+	std::vector<float> lineDynamic;
 
+	int size = generateLines(lineBuffer, 10.0f, 10.0f, 10.0f, -10.0f, -10.0f, -10.0f, 1.0f);
+
+	lineDynamic.push_back(1000.0f);
+	lineDynamic.push_back(1000.0f);
+	lineDynamic.push_back(1000.0f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+
+	lineDynamic.push_back(1000.0f);
+	lineDynamic.push_back(1000.0f);
+	lineDynamic.push_back(999.0f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+	lineDynamic.push_back(0.5f);
+	
+	
+	/*
+	lineDynamic.push_back(-2.0f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-3.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-3.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-4.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-4.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-5.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-5.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-6.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-6.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-1.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-7.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-2.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-7.00f);
+	lineDynamic.push_back(3.00f);
+	lineDynamic.push_back(-2.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-8.00f);
+	lineDynamic.push_back(2.00f);
+	lineDynamic.push_back(-3.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-8.00f);
+	lineDynamic.push_back(2.00f);
+	lineDynamic.push_back(-3.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-9.00f);
+	lineDynamic.push_back(1.00f);
+	lineDynamic.push_back(-4.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-9.00f);
+	lineDynamic.push_back(1.00f);
+	lineDynamic.push_back(-4.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(-10.00f);
+	lineDynamic.push_back(0.00f);
+	lineDynamic.push_back(-5.00f);
+	lineDynamic.push_back(1.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(0.0f);
+	lineDynamic.push_back(1.0f);
+	*/
+
+	showLine = true;
 
 
 	std::vector<Object*> objArr;
 	objArr.reserve(50);
 
 	glGenVertexArrays(1, &VertexArrayID);
+	glGenVertexArrays(1, &VertexArrayID2);
+
 	glBindVertexArray(VertexArrayID);
 
 
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glGenBuffers(1, &vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*lineBuffer.size(), lineBuffer.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glVertexAttribPointer(
 		0,
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 6,
+		sizeof(float) * 7,
 		(void*)0
 	);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(
 		1,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(float) * 7,
+		(void*)(sizeof(float) * 3)
+	);
+
+	// -------- Dynamic lines --------
+
+	glBindVertexArray(VertexArrayID2);
+
+	glGenBuffers(1, &vertexBufferDynamicLine);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDynamicLine);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * lineDynamic.size(), lineDynamic.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDynamicLine);
+	glVertexAttribPointer(
+		0,
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(float) * 6,
+		sizeof(float) * 7,
+		(void*)0
+	);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(
+		1,
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(float) * 7,
 		(void*)(sizeof(float) * 3)
 	);
+
+	
 	Text t;
 	t.text = "drone1: x-10 y-10 z-10";
 	t.x = 100;
@@ -266,14 +442,18 @@ int main(void)
 	camera.addProgram(programID2);
 	camera.addProgram(programIDGround);
 	std::string path = "out.obj";
-	std::string path1 = "ground.obj";
+	std::string path1 = "untitled.obj";
 
 	Object squareObject1(path, FILE_VTN);
 	
 	Object squareObject2(path, FILE_VTN);
 	Object squareObject3(path, FILE_VTN);
 	Object squareObject4(path, FILE_VTN);
-
+	Object squareObject5(path, FILE_VTN);
+	Object squareObject6(path, FILE_VTN);
+	Object squareObject7(path, FILE_VTN);
+	Object squareObject8(path, FILE_VTN);
+	Object squareObject9(path, FILE_VTN);
 
 	Object groundObject(path1);
 	groundObject.physicsEnabled = false;
@@ -281,11 +461,22 @@ int main(void)
 	squareObject2.physicsEnabled = false;
 	squareObject3.physicsEnabled = false;
 	squareObject4.physicsEnabled = false;
+	squareObject5.physicsEnabled = false;
+	squareObject6.physicsEnabled = false;
+	squareObject7.physicsEnabled = false;
+	squareObject8.physicsEnabled = false;
+	squareObject9.physicsEnabled = false;
 
-	squareObject1.move(vec3(0.0f, 4.0f, 0.0f));
-	squareObject2.move(vec3(4.0f, 2.0f,-2.0f));
-	squareObject3.move(vec3(3.0f, 2.0f, -2.0f));
-	squareObject4.move(vec3(1.0f, 2.0f, -2.0f));
+
+	squareObject1.move(vec3(-2.0f, 3.0f, -1.0f));
+	squareObject2.move(vec3(-3.0f, 3.0f,-1.0f));
+	squareObject3.move(vec3(-4.0f, 3.0f, -1.0f));
+	squareObject4.move(vec3(-5.0f, 3.0f, -1.0f));
+	squareObject5.move(vec3(-6.0f, 3.0f, -1.0f));
+	squareObject6.move(vec3(-7.0f, 3.0f, -2.0f));
+	squareObject7.move(vec3(-8.0f, 2.0f, -3.0f));
+	squareObject8.move(vec3(-9.0f, 1.0f, -4.0f));
+	squareObject9.move(vec3(-10.0f, 0.0f, -5.0f));
 
 	
 	groundObject.move(vec3(0.0f, -5.0f, 0.0f));
@@ -298,20 +489,71 @@ int main(void)
 	squareObject2.setColor(vec3(0.0f, 1.0f, 1.0f));
 	squareObject3.setColor(vec3(0.0f, 1.0f, 1.0f));
 	squareObject4.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject5.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject6.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject7.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject8.setColor(vec3(0.0f, 1.0f, 1.0f));
+	squareObject9.setColor(vec3(0.0f, 1.0f, 1.0f));
+	
+	squareObject1.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject2.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject3.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject4.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject5.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject6.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject7.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject8.scale(glm::vec3(0.2f, 0.2f, 0.2f));
+	squareObject9.scale(glm::vec3(0.2f, 0.2f, 0.2f));
 
-	Physics* physics = new Physics();
+
+
+
+	physics = new Physics();
 
 	Renderer renderer = Renderer(programID);
 	renderer.setPhysics(physics);
+
+	Renderer renderer2 = Renderer(programID);
+	renderer2.setPhysics(physics);
+
+	Renderer renderer3 = Renderer(programID);
+	renderer3.setPhysics(physics);
+
+	Renderer renderer4 = Renderer(programID);
+	renderer4.setPhysics(physics);
+
+	Renderer renderer5 = Renderer(programID);
+	renderer5.setPhysics(physics);
+
+	Renderer renderer6 = Renderer(programID);
+	renderer6.setPhysics(physics);
+
+	pid = programID;
+
+
+	/*
+	renderer.addObject(&squareObject1);
+
 	renderer.addObject(&squareObject2);
-	squareObject2.scale(glm::vec3(0.5f, 0.5f, 0.5f));
 	renderer.addObject(&squareObject3);
 	renderer.addObject(&squareObject4);
-
+	renderer.addObject(&squareObject5);
+	renderer.addObject(&squareObject6);
+	renderer.addObject(&squareObject7);
+	renderer.addObject(&squareObject8);
+	renderer.addObject(&squareObject9);
+	*/
 
 	renderer.textureEnabled = false;
-	
+	renderer2.textureEnabled = false;
+	renderer3.textureEnabled = false;
+	renderer4.textureEnabled = false;
+	renderer5.textureEnabled = false;
+	renderer6.textureEnabled = false;
+
+
 	Renderer rendererGround = Renderer(programIDGround);
+	rendererGround.priv = true;
 	rendererGround.setPhysics(physics);
 	rendererGround.addObject(&groundObject);
 
@@ -325,7 +567,15 @@ int main(void)
 
 	std::vector<Renderer*> renderQueue;
 	renderQueue.push_back(&renderer);
+	renderQueue.push_back(&renderer2);
+	renderQueue.push_back(&renderer3);
+	renderQueue.push_back(&renderer4);
+	renderQueue.push_back(&renderer5);
+	renderQueue.push_back(&renderer6);
+
+
 	renderQueue.push_back(&rendererGround);
+
 	renderQueue.push_back(&textRenderer);
 	int command = 0;
 	camera.addTextShader(textRenderer.getProgramID());
@@ -352,15 +602,25 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		processCommands(renderQueue, camera, objArr, lineBuffer);
-		if(showLine){
+		processCommands(&renderer, renderQueue, camera, objArr, lineBuffer, lineDynamic);
+		if(showGrid){
+			
 			glUseProgram(programID2);
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 			glBindVertexArray(VertexArrayID);
 
-			glDrawArrays(GL_LINES, 0, size);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+			glDrawArrays(GL_LINES, 0, lineBuffer.size()/7);
 		}
+		if (showLine) {
+			glUseProgram(programID2);
+			glBindVertexArray(VertexArrayID2);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDynamicLine);
+
+			glDrawArrays(GL_LINES, 0 , lineDynamic.size() / 7);
+		}
+
 		for(Renderer* r: renderQueue)
 			r->render();
 
@@ -479,7 +739,7 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 
 	buffer.clear();
 
-	buffer.reserve((int(y_count) + int(y_count)) * 6 * 2);
+	buffer.reserve((int(y_count) + int(y_count)) * 7 * 2);
 
 
 	for (float i = min_x; i <= max_x; i += resolution) {
@@ -491,10 +751,12 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
 
 			buffer.push_back(i);
 			buffer.push_back(max_y);
 			buffer.push_back(j);
+			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
@@ -512,10 +774,12 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
 
 			buffer.push_back(j);
 			buffer.push_back(i);
 			buffer.push_back(max_z);
+			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
@@ -533,10 +797,12 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
+			buffer.push_back(0.5f);
 
 			buffer.push_back(max_x);
 			buffer.push_back(i);
 			buffer.push_back(j);
+			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
 			buffer.push_back(0.5f);
@@ -545,9 +811,8 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 
 	}
 
-	glBindVertexArray(VertexArrayID);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
@@ -559,7 +824,7 @@ int generateLines(std::vector<float>& buffer, float max_x, float max_y, float ma
 }
 
 
-void processCommands(std::vector<Renderer*>& renderQueue, Camera& camera, std::vector<Object*>& objArr, std::vector<float>& lineBuffer){
+void processCommands(Renderer* r, std::vector<Renderer*>& renderQueue, Camera& camera, std::vector<Object*>& objArr, std::vector<float>& lineBuffer, std::vector<float>& dynamicLineBuffer){
 
 		if(commands.size() < 1)
 		return;
@@ -581,32 +846,51 @@ void processCommands(std::vector<Renderer*>& renderQueue, Camera& camera, std::v
 			showLine = false;
 		}
 
+		if (arr[0] == "showgrid") {
+			showGrid = true;
+		}
+
+		if (arr[0] == "hidegrid") {
+			showGrid = false;
+		}
+
 		std::string path = "out.obj";
 
 		if(arr[0] == "add"){
 			Object* obj = new Object(path, FILE_VTN);
 			obj->name = arr[1];
 			std::cout << "scale: " << std::stof(arr[2]) << std::endl;
-			std::cout << "position: " << std::stof(arr[3]) << std::stof(arr[4]) << std::stof(arr[5]) << std::endl;
+			std::cout << "position: " << std::stof(arr[3]) << " " << std::stof(arr[4]) << " " << std::stof(arr[5]) << std::endl;
 			std::cout << "color: " << std::stof(arr[6]) << std::stof(arr[7]) << std::stof(arr[8]) << std::endl;
-			obj->scale(glm::vec3(std::stof(arr[2]), std::stof(arr[2]), std::stof(arr[2])));
 			obj->move(glm::vec3(std::stof(arr[3]), std::stof(arr[4]), std::stof(arr[5])));
+
 			obj->setColor(glm::vec3(std::stof(arr[6]), std::stof(arr[7]), std::stof(arr[8])));
+			obj->scale(glm::vec3(std::stof(arr[2]), std::stof(arr[2]), std::stof(arr[2])));
+
+			
 			obj->physicsEnabled = false;
 			objArr.push_back(obj);
 			bool added = false;
 
+
 			for (Renderer* render : renderQueue) {
-				if (render->getObjectCount() < 32) {
-					render->addObject(obj);
+				if (render->getObjectCount() < 31 && !render->priv) {
+					added = render->addObject(obj);
 					added = true;
 					break;
 				}
 			}
 
 			if (!added) {
-				renderQueue.push_back(new Renderer());
+				std::cout << "sda1" << std::endl;
+
+				Renderer* r = new Renderer(pid);
+				r->setPhysics(physics);
+				r->textureEnabled = false;
+				
+				renderQueue.push_back(r);
 				renderQueue[renderQueue.size() - 1]->addObject(obj);
+				std::cout << "sda2" << std::endl;
 			}
 
 		}
@@ -627,11 +911,75 @@ void processCommands(std::vector<Renderer*>& renderQueue, Camera& camera, std::v
 			}
 		}
 
-		if (arr[0] == "generatelines") {
-			std::cout << "generating line " << std::endl;
+		if (arr[0] == "generategrid") {
+			std::cout << "generating grid " << std::endl;
 			generateLines(lineBuffer, std::stof(arr[1]), std::stof(arr[2]), std::stof(arr[3]), std::stof(arr[4]), std::stof(arr[5]), std::stof(arr[6]), std::stof(arr[7]));
 			
-			showLine = true;
+			showGrid = true;
+		}
+
+		if (arr[0] == "drawline") {
+
+			if (arr.size() != 12) {
+				std::cout << "Invalid command!" << std::endl;
+				commands.clear();
+
+				return;
+			}
+
+			lineMap.insert(std::pair<std::string, int>(arr[1], dynamicLineBuffer.size()));
+			dynamicLineBuffer.push_back(std::stof(arr[2]));
+			dynamicLineBuffer.push_back(std::stof(arr[3]));
+			dynamicLineBuffer.push_back(std::stof(arr[4]));
+			
+			dynamicLineBuffer.push_back(std::stof(arr[8]));
+			dynamicLineBuffer.push_back(std::stof(arr[9]));
+			dynamicLineBuffer.push_back(std::stof(arr[10]));
+			dynamicLineBuffer.push_back(std::stof(arr[11]));
+
+			
+			dynamicLineBuffer.push_back(std::stof(arr[5]));
+			dynamicLineBuffer.push_back(std::stof(arr[6]));
+			dynamicLineBuffer.push_back(std::stof(arr[7]));
+
+			dynamicLineBuffer.push_back(std::stof(arr[8]));
+			dynamicLineBuffer.push_back(std::stof(arr[9]));
+			dynamicLineBuffer.push_back(std::stof(arr[10]));
+			dynamicLineBuffer.push_back(std::stof(arr[11]));
+
+
+			glBindVertexArray(VertexArrayID2);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDynamicLine);
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * dynamicLineBuffer.size(), dynamicLineBuffer.data(), GL_STATIC_DRAW);
+
+		}
+
+
+		if (arr[0] == "deleteline") {
+
+			int offset = lineMap[arr[1]];
+			lineMap.erase(arr[1]);
+
+			std::map<std::string, int>::iterator it = lineMap.begin();
+
+			// Iterate through the map and print the elements
+			while (it != lineMap.end()) {
+				if (offset < it->second)
+					it->second -= 7;
+
+				++it;
+			}
+
+			dynamicLineBuffer.erase(dynamicLineBuffer.begin() + offset, dynamicLineBuffer.begin() + offset + 7);
+
+			glBindVertexArray(VertexArrayID2);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDynamicLine);
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float)* dynamicLineBuffer.size(), dynamicLineBuffer.data(), GL_STATIC_DRAW);
+
 		}
 		
 

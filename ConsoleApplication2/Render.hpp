@@ -23,12 +23,14 @@ public:
 	virtual void render();
 
 	bool textureEnabled;
+	bool priv;
 
 protected:
 
 	GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path);
 	GLuint screenHeight, screenWidth;
 	glm::mat4 lightProjection, lightView;
+
 
 	Physics* physics;
 	

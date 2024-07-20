@@ -12,7 +12,7 @@ Renderer::Renderer(GLuint programID)
 {
 	screenHeight = HEIGHT;
 	screenWidth = WIDTH;
-	
+	priv = false;
 	physics = nullptr;
 
 	textureEnabled = false;
@@ -95,7 +95,7 @@ Renderer::Renderer(GLuint programID)
 	glUniform1iv(glGetUniformLocation(programID, "sampler"), 32, samplers);
 	modelUniformID = glGetUniformLocation(programID, "M");
 	lightUniformID = glGetUniformLocation(programID, "lightPos");
-	lightPos = glm::vec3(0.0f, 6.0f, 0.0f);
+	lightPos = glm::vec3(0.0f, 26.0f, 0.0f);
 	glUniform3fv(lightUniformID, 1, &lightPos[0]);
 }
 
@@ -107,7 +107,7 @@ Renderer::~Renderer()
 
 bool Renderer::addObject(Object* object)
 {
-		physics->addObject(object);
+		//physics->addObject(object);
 
 
 		if(objects.size() >= MAX_OBJECT)
